@@ -7,9 +7,10 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
 - [x] Rust Boilerplate
 - Base Features
   - [ ] Parse inputs using Clap
-    - [ ] Add inputs to a internal config structure
+    - [ ] Add inputs to a internal settings structure
   - [ ] Parse config files
-    - [ ] Add config settings to the internal config structure
+    - [ ] Add config settings to the internal settings structure
+  - [ ] Add defaults to the internal settings structure if nothing is defined
   - [ ] Consider ignore files and filters then from the list (-x --exclude)
   - [ ] Consider tags and tag folders and reorganize file list (-t --tag)
   - [ ] Consider inclusion list for extra files and reorganize file list (-i --include)
