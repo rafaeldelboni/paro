@@ -20,6 +20,10 @@ impl ConfigParser {
         .unwrap()
         .set_default("excludes", Vec::<String>::new())
         .unwrap()
+        .set_default("includes", Vec::<String>::new())
+        .unwrap()
+        .set_default("directories", Vec::<String>::new())
+        .unwrap()
         .build()
         .unwrap(),
     }
@@ -51,5 +55,17 @@ mod tests {
   fn test_config_excludes() {
     let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
     assert_eq!(settings.excludes, ["file.txt", "file2.txt", "file3.txt"]);
+  }
+
+  #[test]
+  fn test_config_includes() {
+    let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
+    assert_eq!(settings.includes, ["file.txt", "file2.txt", "file3.txt"]);
+  }
+
+  #[test]
+  fn test_config_directories() {
+    let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
+    assert_eq!(settings.directories, ["home/", "dome/", "pombe/"]);
   }
 }

@@ -50,6 +50,33 @@ impl ClapParser {
           )
           .takes_value(true)
           .action(ArgAction::Append),
+      )
+      .arg(
+        Arg::new("includes")
+          .short('i')
+          .long("include")
+          .value_name("file-pattern")
+          .help("Install files that match <file-pattern>.")
+          .long_help(
+            "Install files that match <file-pattern>. \
+             Despite being excluded by the -x flag or a setting in the config.
+             This can be repeated with additional patterns.",
+          )
+          .takes_value(true)
+          .action(ArgAction::Append),
+      )
+      .arg(
+        Arg::new("directories")
+          .short('a')
+          .long("add-dir")
+          .value_name("folder-pattern")
+          .help("Install dotfiles directories from the <folder-pattern>.")
+          .long_help(
+            "Install dotfiles directories from the <folder-pattern>. \
+             This can be repeated with additional patterns.",
+          )
+          .takes_value(true)
+          .action(ArgAction::Append),
       );
 
     Self { clap: app }
@@ -64,6 +91,8 @@ impl ClapParser {
     ParoSettings {
       tags: to_vec_string(&matches, "tags"),
       excludes: to_vec_string(&matches, "excludes"),
+      includes: to_vec_string(&matches, "includes"),
+      directories: to_vec_string(&matches, "directories"),
     }
   }
 }
@@ -115,5 +144,27 @@ mod tests {
       "file3.txt",
     ]);
     assert_eq!(settings.excludes, ["file.txt", "file2.txt", "file3.txt"]);
+  }
+
+  #[test]
+  fn test_clap_includes() {
+    let settings = ClapParser::new().into_settings(vec![
+      "paro",
+      "-i",
+      "file.txt",
+      "-i",
+      "file2.txt",
+      "-i",
+      "file3.txt",
+    ]);
+    assert_eq!(settings.includes, ["file.txt", "file2.txt", "file3.txt"]);
+  }
+
+  #[test]
+  fn test_clap_directories() {
+    let settings = ClapParser::new().into_settings(vec![
+      "paro", "-a", "home/", "-a", "dome/", "-a", "pombe/",
+    ]);
+    assert_eq!(settings.directories, ["home/", "dome/", "pombe/"]);
   }
 }
