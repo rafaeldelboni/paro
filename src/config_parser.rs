@@ -10,13 +10,14 @@ impl ConfigParser {
     let mut builder = Config::builder();
 
     for file in files {
-      println!("{:?}->", file);
       builder =
         builder.add_source(File::new(file, FileFormat::Toml).required(false));
     }
 
     Self {
       config: builder
+        .set_default("tags", Vec::<String>::new())
+        .unwrap()
         .set_default("excludes", Vec::<String>::new())
         .unwrap()
         .build()
@@ -32,6 +33,19 @@ impl ConfigParser {
 #[cfg(test)]
 mod tests {
   use super::*;
+
+  #[test]
+  fn test_config_defaults() {
+    let settings = ConfigParser::new(vec!["tests/non-exist"]).into_settings();
+    assert_eq!(settings.tags, Vec::<String>::new());
+    assert_eq!(settings.excludes, Vec::<String>::new());
+  }
+
+  #[test]
+  fn test_config_tags() {
+    let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
+    assert_eq!(settings.tags, ["linux1", "macos2"]);
+  }
 
   #[test]
   fn test_config_excludes() {

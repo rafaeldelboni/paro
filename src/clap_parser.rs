@@ -1,8 +1,16 @@
 use crate::settings::ParoSettings;
-use clap::{App, Arg, ArgAction, Command};
+use clap::{App, Arg, ArgAction, ArgMatches, Command};
 
 pub struct ClapParser {
   clap: App<'static>,
+}
+
+fn to_vec_string(matches: &ArgMatches, id: &str) -> Vec<String> {
+  matches
+    .get_many::<String>(id)
+    .unwrap_or_default()
+    .map(|v| v.to_string())
+    .collect()
 }
 
 impl ClapParser {
@@ -15,14 +23,30 @@ impl ClapParser {
                 `paro --help` gives all details.",
       )
       .arg(
+        Arg::new("tags")
+          .short('t')
+          .long("tag")
+          .value_name("tag")
+          .help("Install dotfiles according to <tag>.")
+          .long_help(
+            "Do not install files that match <file-pattern>. \
+             Tagged files go in a directory named for the tag, \
+             prefixed with tag-. Therefore, files under .dotfiles/tag-git \
+             are only installed when installing using the git tag. \
+             This can be repeated with additional patterns.",
+          )
+          .takes_value(true)
+          .action(ArgAction::Append),
+      )
+      .arg(
         Arg::new("excludes")
           .short('x')
-          .long("excludes")
+          .long("exclude")
           .value_name("file-pattern")
           .help("Do not install files that match <file-pattern>.")
           .long_help(
             "Do not install files that match <file-pattern>. \
-                     This can be repeated with additional patterns.",
+             This can be repeated with additional patterns.",
           )
           .takes_value(true)
           .action(ArgAction::Append),
@@ -38,11 +62,8 @@ impl ClapParser {
       self.clap.get_matches_from(manual_args)
     };
     ParoSettings {
-      excludes: matches
-        .get_many::<String>("excludes")
-        .unwrap_or_default()
-        .map(|v| v.to_string())
-        .collect(),
+      tags: to_vec_string(&matches, "tags"),
+      excludes: to_vec_string(&matches, "excludes"),
     }
   }
 }
@@ -50,6 +71,37 @@ impl ClapParser {
 #[cfg(test)]
 mod tests {
   use super::*;
+
+  #[test]
+  fn test_to_vec_string() {
+    let matches = ClapParser::new().clap.get_matches_from(vec![
+      "paro",
+      "-x",
+      "file.txt",
+      "-x",
+      "file2.txt",
+      "-x",
+      "file3.txt",
+    ]);
+    assert_eq!(
+      to_vec_string(&matches, "excludes"),
+      ["file.txt", "file2.txt", "file3.txt"]
+    );
+  }
+
+  #[test]
+  fn test_clap_defaults() {
+    let settings = ClapParser::new().into_settings(vec!["paro"]);
+    assert_eq!(settings.tags, Vec::<String>::new());
+    assert_eq!(settings.excludes, Vec::<String>::new());
+  }
+
+  #[test]
+  fn test_clap_tags() {
+    let settings =
+      ClapParser::new().into_settings(vec!["paro", "-t", "linux1"]);
+    assert_eq!(settings.tags, ["linux1"]);
+  }
 
   #[test]
   fn test_clap_excludes() {
