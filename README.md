@@ -4,14 +4,14 @@
 Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot.github.io/rcm).
 
 ## TODO
-- [ ] Rust Boilerplate
+- [x] Rust Boilerplate
 - Base Features
   - [ ] Parse inputs using Clap
     - [ ] Add inputs to a internal config structure
   - [ ] Parse config files
     - [ ] Add config settings to the internal config structure
   - [ ] Read .dotfile folder structure and store it
-  - [ ] Consider ignore files and filters then from the list
+  - [ ] Consider ignore files and filters then from the list (-x --exclude)
   - [ ] Consider tags and tag folders and reorganize file list (-t --tag)
   - [ ] Consider hosts and host folders and reorganize file list
   - [ ] Option to override host name from config (-B --hostname)
@@ -39,7 +39,8 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
   - [ ] Linux (arm)
   - [ ] Macos (x86_64)
   - [ ] Macos (arm)
-- Instalation Script (Like rustup install)
+- [ ] Instalation Script (Like rustup install)
+- [ ] Documentation
 
 ## Contributing
 If you find any dead links, misinformation or any improvements in this software at all [Emails](https://github.com/rafaeldelboni), [PRs](https://github.com/rafaeldelboni/paro/pulls) and [Issues](https://github.com/rafaeldelboni/paro/issues) are highly encouraged.
