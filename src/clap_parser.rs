@@ -5,7 +5,7 @@ pub struct ClapParser {
   clap: App<'static>,
 }
 
-impl<'help> ClapParser {
+impl ClapParser {
   pub fn new() -> Self {
     let app = Command::new("paro")
       .version("0.0.1")
@@ -31,11 +31,11 @@ impl<'help> ClapParser {
     Self { clap: app }
   }
 
-  pub fn to_settings(self, manual_args: Vec<&str>) -> ParoSettings {
+  pub fn into_settings(self, manual_args: Vec<&str>) -> ParoSettings {
     let matches = if manual_args.is_empty() {
-      self.clap.get_matches().clone()
+      self.clap.get_matches()
     } else {
-      self.clap.get_matches_from(manual_args).clone()
+      self.clap.get_matches_from(manual_args)
     };
     ParoSettings {
       excludes: matches
@@ -53,7 +53,7 @@ mod tests {
 
   #[test]
   fn test_clap_excludes() {
-    let settings = ClapParser::new().to_settings(vec![
+    let settings = ClapParser::new().into_settings(vec![
       "paro",
       "-x",
       "file.txt",

@@ -24,7 +24,7 @@ impl ConfigParser {
     }
   }
 
-  pub fn to_settings(self) -> ParoSettings {
+  pub fn into_settings(self) -> ParoSettings {
     self.config.try_deserialize().unwrap()
   }
 }
@@ -35,7 +35,7 @@ mod tests {
 
   #[test]
   fn test_config_excludes() {
-    let settings = ConfigParser::new(vec!["tests/settings"]).to_settings();
+    let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
     assert_eq!(settings.excludes, ["file.txt", "file2.txt", "file3.txt"]);
   }
 }
