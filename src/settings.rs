@@ -6,4 +6,5 @@ pub struct ParoSettings {
   pub excludes: Vec<String>,
   pub includes: Vec<String>,
   pub directories: Vec<String>,
+  pub hostname: String,
 }

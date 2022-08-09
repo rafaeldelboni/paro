@@ -77,6 +77,20 @@ impl ClapParser {
           )
           .takes_value(true)
           .action(ArgAction::Append),
+      )
+      .arg(
+        Arg::new("hostname")
+          .short('B')
+          .long("hostname")
+          .value_name("name")
+          .help("Override the computer hostname by <name>.")
+          .default_value("")
+          .long_help(
+            "Override the computer hostname by <name>. \
+             Shall return the standard host name for the current machine.",
+          )
+          .takes_value(true)
+          .action(ArgAction::Set),
       );
 
     Self { clap: app }
@@ -93,6 +107,7 @@ impl ClapParser {
       excludes: to_vec_string(&matches, "excludes"),
       includes: to_vec_string(&matches, "includes"),
       directories: to_vec_string(&matches, "directories"),
+      hostname: matches.get_one::<String>("hostname").unwrap().to_string(),
     }
   }
 }
@@ -123,6 +138,9 @@ mod tests {
     let settings = ClapParser::new().into_settings(vec!["paro"]);
     assert_eq!(settings.tags, Vec::<String>::new());
     assert_eq!(settings.excludes, Vec::<String>::new());
+    assert_eq!(settings.includes, Vec::<String>::new());
+    assert_eq!(settings.directories, Vec::<String>::new());
+    assert_eq!(settings.hostname, String::new());
   }
 
   #[test]
@@ -166,5 +184,17 @@ mod tests {
       "paro", "-a", "home/", "-a", "dome/", "-a", "pombe/",
     ]);
     assert_eq!(settings.directories, ["home/", "dome/", "pombe/"]);
+  }
+
+  #[test]
+  fn test_clap_hostname() {
+    let settings = ClapParser::new().into_settings(vec![
+      "paro",
+      "-B",
+      "my-machine",
+      "-B",
+      "will-override-my-machine",
+    ]);
+    assert_eq!(settings.hostname, "will-override-my-machine");
   }
 }

@@ -24,6 +24,8 @@ impl ConfigParser {
         .unwrap()
         .set_default("directories", Vec::<String>::new())
         .unwrap()
+        .set_default("hostname", String::new())
+        .unwrap()
         .build()
         .unwrap(),
     }
@@ -43,6 +45,9 @@ mod tests {
     let settings = ConfigParser::new(vec!["tests/non-exist"]).into_settings();
     assert_eq!(settings.tags, Vec::<String>::new());
     assert_eq!(settings.excludes, Vec::<String>::new());
+    assert_eq!(settings.includes, Vec::<String>::new());
+    assert_eq!(settings.directories, Vec::<String>::new());
+    assert_eq!(settings.hostname, String::new());
   }
 
   #[test]
@@ -67,5 +72,11 @@ mod tests {
   fn test_config_directories() {
     let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
     assert_eq!(settings.directories, ["home/", "dome/", "pombe/"]);
+  }
+
+  #[test]
+  fn test_config_hostname() {
+    let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
+    assert_eq!(settings.hostname, "hostname-in-config");
   }
 }
