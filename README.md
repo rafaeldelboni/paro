@@ -34,6 +34,7 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
   - [ ] Skip hooks (-K --skip-hooks)
   - [ ] Option to always copy files instead symlinking them. (-C --copy)
   - [ ] Consider inclusion list to always copy files instead symlinking them. (-c --include-copy)
+  - [ ] Option to install git hooks to run paro sync on post-commit and post-merge hooks
 - [x] CI Pipeline to lint and run test
 - CI Pipeline to build releases
   - [ ] Linux (x86_64)
