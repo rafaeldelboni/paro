@@ -26,6 +26,12 @@ impl ConfigParser {
         .unwrap()
         .set_default("hostname", String::new())
         .unwrap()
+        .set_default("force", false)
+        .unwrap()
+        .set_default("down", false)
+        .unwrap()
+        .set_default("dry-run", false)
+        .unwrap()
         .build()
         .unwrap(),
     }
@@ -48,6 +54,9 @@ mod tests {
     assert_eq!(settings.includes, Vec::<String>::new());
     assert_eq!(settings.directories, Vec::<String>::new());
     assert_eq!(settings.hostname, String::new());
+    assert_eq!(settings.force, false);
+    assert_eq!(settings.down, false);
+    assert_eq!(settings.dry_run, false);
   }
 
   #[test]
@@ -78,5 +87,23 @@ mod tests {
   fn test_config_hostname() {
     let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
     assert_eq!(settings.hostname, "hostname-in-config");
+  }
+
+  #[test]
+  fn test_config_force() {
+    let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
+    assert_eq!(settings.force, true);
+  }
+
+  #[test]
+  fn test_config_down() {
+    let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
+    assert_eq!(settings.down, true);
+  }
+
+  #[test]
+  fn test_config_dry_run() {
+    let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
+    assert_eq!(settings.dry_run, true);
   }
 }

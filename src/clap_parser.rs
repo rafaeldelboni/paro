@@ -91,6 +91,39 @@ impl ClapParser {
           )
           .takes_value(true)
           .action(ArgAction::Set),
+      )
+      .arg(
+        Arg::new("force")
+          .short('f')
+          .long("force")
+          .help("Override if the file already exists in your home directory.")
+          .long_help(
+            "Override if the file already exists in your home directory, \
+             does not prompt for how to handle it.",
+          )
+          .action(ArgAction::SetTrue),
+      )
+      .arg(
+        Arg::new("down")
+          .short('d')
+          .long("down")
+          .help("Remove all the rc files that the paro suite knows about.")
+          .long_help(
+            "Remove all the rc files that the paro suite knows about, \
+             This can be further controlled with the -t, -B and -a flags.",
+          )
+          .action(ArgAction::SetTrue),
+      )
+      .arg(
+        Arg::new("dry-run")
+          .short('D')
+          .long("dry-run")
+          .help("Shows what paro would do without causing the effects.")
+          .long_help(
+            "Shows what paro would do without causing the effects. \
+             A simulated or practice performance; rehearsal.",
+          )
+          .action(ArgAction::SetTrue),
       );
 
     Self { clap: app }
@@ -108,6 +141,9 @@ impl ClapParser {
       includes: to_vec_string(&matches, "includes"),
       directories: to_vec_string(&matches, "directories"),
       hostname: matches.get_one::<String>("hostname").unwrap().to_string(),
+      force: matches.get_one::<bool>("force").copied().unwrap(),
+      down: matches.get_one::<bool>("down").copied().unwrap(),
+      dry_run: matches.get_one::<bool>("dry-run").copied().unwrap(),
     }
   }
 }
@@ -141,6 +177,9 @@ mod tests {
     assert_eq!(settings.includes, Vec::<String>::new());
     assert_eq!(settings.directories, Vec::<String>::new());
     assert_eq!(settings.hostname, String::new());
+    assert_eq!(settings.force, false);
+    assert_eq!(settings.down, false);
+    assert_eq!(settings.dry_run, false);
   }
 
   #[test]
