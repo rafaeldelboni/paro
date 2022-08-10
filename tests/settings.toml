@@ -1,1 +1,8 @@
+tags=["linux1", "macos2"]
 excludes=["file.txt", "file2.txt", "file3.txt"]
+includes=["file.txt", "file2.txt", "file3.txt"]
+directories=["home/", "dome/", "pombe/"]
+hostname="hostname-in-config"
+force=true
+down=true
+dry-run=true
