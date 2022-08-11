@@ -84,7 +84,6 @@ impl ClapParser {
           .long("hostname")
           .value_name("name")
           .help("Override the computer hostname by <name>.")
-          .default_value("")
           .long_help(
             "Override the computer hostname by <name>. \
              Shall return the standard host name for the current machine.",
@@ -140,7 +139,10 @@ impl ClapParser {
       excludes: to_vec_string(&matches, "excludes"),
       includes: to_vec_string(&matches, "includes"),
       directories: to_vec_string(&matches, "directories"),
-      hostname: matches.get_one::<String>("hostname").unwrap().to_string(),
+      hostname: matches
+        .get_one::<String>("hostname")
+        .unwrap_or(&"".to_string())
+        .to_string(),
       force: matches.get_one::<bool>("force").copied().unwrap(),
       down: matches.get_one::<bool>("down").copied().unwrap(),
       dry_run: matches.get_one::<bool>("dry-run").copied().unwrap(),

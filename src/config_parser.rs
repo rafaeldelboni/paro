@@ -6,12 +6,13 @@ pub struct ConfigParser {
 }
 
 impl ConfigParser {
-  pub fn new(files: Vec<&str>) -> Self {
+  pub fn new(files: &Vec<String>) -> Self {
     let mut builder = Config::builder();
 
     for file in files {
-      builder =
-        builder.add_source(File::new(file, FileFormat::Toml).required(false));
+      builder = builder.add_source(
+        File::new(&file.to_owned()[..], FileFormat::Toml).required(false),
+      );
     }
 
     Self {
@@ -46,9 +47,14 @@ impl ConfigParser {
 mod tests {
   use super::*;
 
+  fn config_file() -> Vec<String> {
+    vec!["tests/settings".to_string()]
+  }
+
   #[test]
   fn test_config_defaults() {
-    let settings = ConfigParser::new(vec!["tests/non-exist"]).into_settings();
+    let settings =
+      ConfigParser::new(&vec!["tests/non-exist".to_string()]).into_settings();
     assert_eq!(settings.tags, Vec::<String>::new());
     assert_eq!(settings.excludes, Vec::<String>::new());
     assert_eq!(settings.includes, Vec::<String>::new());
@@ -61,49 +67,49 @@ mod tests {
 
   #[test]
   fn test_config_tags() {
-    let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
+    let settings = ConfigParser::new(&config_file()).into_settings();
     assert_eq!(settings.tags, ["linux1", "macos2"]);
   }
 
   #[test]
   fn test_config_excludes() {
-    let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
+    let settings = ConfigParser::new(&config_file()).into_settings();
     assert_eq!(settings.excludes, ["file.txt", "file2.txt", "file3.txt"]);
   }
 
   #[test]
   fn test_config_includes() {
-    let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
+    let settings = ConfigParser::new(&config_file()).into_settings();
     assert_eq!(settings.includes, ["file.txt", "file2.txt", "file3.txt"]);
   }
 
   #[test]
   fn test_config_directories() {
-    let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
+    let settings = ConfigParser::new(&config_file()).into_settings();
     assert_eq!(settings.directories, ["home/", "dome/", "pombe/"]);
   }
 
   #[test]
   fn test_config_hostname() {
-    let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
+    let settings = ConfigParser::new(&config_file()).into_settings();
     assert_eq!(settings.hostname, "hostname-in-config");
   }
 
   #[test]
   fn test_config_force() {
-    let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
+    let settings = ConfigParser::new(&config_file()).into_settings();
     assert_eq!(settings.force, true);
   }
 
   #[test]
   fn test_config_down() {
-    let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
+    let settings = ConfigParser::new(&config_file()).into_settings();
     assert_eq!(settings.down, true);
   }
 
   #[test]
   fn test_config_dry_run() {
-    let settings = ConfigParser::new(vec!["tests/settings"]).into_settings();
+    let settings = ConfigParser::new(&config_file()).into_settings();
     assert_eq!(settings.dry_run, true);
   }
 }
