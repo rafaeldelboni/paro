@@ -5,12 +5,14 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
 
 ## TODO
 - [x] Rust Boilerplate
+- [x] CI Pipeline to lint and run test
 - Base Features
   - [x] Parse inputs using Clap
     - [x] Add inputs to a internal settings structure
   - [x] Parse config files
     - [x] Add config settings to the internal settings structure
-  - [ ] Add defaults to the internal settings structure if nothing is defined
+  - [x] Add defaults to the internal settings structure if nothing is defined
+  - [ ] Read .dotfile folder(s) and files structure and store it
   - [ ] Consider ignore files and filters then from the list (-x --exclude)
   - [ ] Consider tags and tag folders and reorganize file list (-t --tag)
   - [ ] Consider inclusion list for extra files and reorganize file list (-i --include)
@@ -22,8 +24,14 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
   - [ ] Add drop/delete command, this deletes dotfiles managed by paro (-d --down)
   - [ ] Add dry-run command (-D --dry-run)
   - [ ] Add version command (-v --version)
-  - [ ] Read .dotfile folder(s) and files structure and store it
   - [ ] Consider .dot files and filters then from the list
+- CI Pipeline to build releases
+  - [ ] Linux (x86_64)
+  - [ ] Linux (arm)
+  - [ ] Macos (x86_64)
+  - [ ] Macos (arm)
+- [ ] Documentation
+- [ ] Instalation Script (Like rustup install)
 - Extras Features
   - [ ] Configuration to override the destination file path will be symlinked or copied (-o --override-path)
   - [ ] Sync command (delete files that are set to be ignored) (-S --sync)
@@ -35,14 +43,6 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
   - [ ] Option to always copy files instead symlinking them. (-C --copy)
   - [ ] Consider inclusion list to always copy files instead symlinking them. (-c --include-copy)
   - [ ] Option to install git hooks to run paro sync on post-commit and post-merge hooks
-- [x] CI Pipeline to lint and run test
-- CI Pipeline to build releases
-  - [ ] Linux (x86_64)
-  - [ ] Linux (arm)
-  - [ ] Macos (x86_64)
-  - [ ] Macos (arm)
-- [ ] Instalation Script (Like rustup install)
-- [ ] Documentation
 
 ## Contributing
 If you find any dead links, misinformation or any improvements in this software at all [Emails](https://github.com/rafaeldelboni), [PRs](https://github.com/rafaeldelboni/paro/pulls) and [Issues](https://github.com/rafaeldelboni/paro/issues) are highly encouraged.
