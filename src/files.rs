@@ -12,7 +12,3 @@ pub fn walk_directories(directories: Vec<String>) -> Vec<DirEntry> {
   }
   paths
 }
-
-//for entry in walk_directories(vec!["/home/delboni/.dotfiles".to_string(), "/home/delboni/Pictures".to_string()]) {
-  //println!("{:?}", entry);
-//}
