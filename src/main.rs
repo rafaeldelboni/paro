@@ -1,5 +1,6 @@
 mod clap_parser;
 mod config_parser;
+mod files;
 mod nix_helper;
 mod settings;
 
