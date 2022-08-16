@@ -13,7 +13,11 @@ fn main() {
   let config = ConfigParser::new(&config_files).into_settings();
   let clap = ClapParser::new().into_settings(vec![]);
   let merged = defaults.clone().merge(config.clone()).merge(clap.clone());
-  let files = files::walk_directories(merged.directories.clone());
+
+  // { TODO move this to a function
+  let mut files = files::walk_directories(merged.directories.clone());
+  files::remove_files(&mut files, merged.excludes.clone());
+  // }
 
   println!(
     "config files: {:?}\n\
