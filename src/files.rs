@@ -23,11 +23,12 @@ mod tests {
       "tests/example-dotfiles/folder".to_string(),
       "tests/example-dotfiles/tag-um".to_string(),
     ]);
-    let str_files: Vec<String> = files
+    let mut str_files: Vec<String> = files
       .clone()
       .into_iter()
       .map(|e| e.path().to_str().unwrap().to_string())
       .collect();
+    str_files.sort();
 
     assert_eq!(str_files.len(), 5);
     assert_eq!(
@@ -36,8 +37,8 @@ mod tests {
         "tests/example-dotfiles/folder",
         "tests/example-dotfiles/folder/something.txt",
         "tests/example-dotfiles/tag-um",
+        "tests/example-dotfiles/tag-um/.file.txt",
         "tests/example-dotfiles/tag-um/file.txt",
-        "tests/example-dotfiles/tag-um/.file.txt"
       ]
     );
   }
