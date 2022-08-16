@@ -11,14 +11,14 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
     - [x] Add inputs to a internal settings structure
   - [x] Parse config files
     - [x] Add config settings to the internal settings structure
+  - [x] Option to override host name from config (-B --hostname)
   - [x] Add defaults to the internal settings structure if nothing is defined
-  - [ ] Read .dotfile folder(s) and files structure and store it
-  - [ ] Consider ignore files and filters then from the list (-x --exclude)
-  - [ ] Consider tags and tag folders and reorganize file list (-t --tag)
+  - [x] Read .dotfile folder(s) and files structure and store it
+  - [x] Consider ignore files and filters then from the list (-x --exclude)
   - [ ] Consider inclusion list for extra files and reorganize file list (-i --include)
   - [ ] Consider multiple dotfiles folders configuration and reorganize file list (-a --add-dir)
+  - [ ] Consider tags and tag folders and reorganize file list (-t --tag)
   - [ ] Consider hosts and host folders and reorganize file list
-  - [ ] Option to override host name from config (-B --hostname)
   - [ ] Dialog to ask to override existing files if already exists in your home directory but does not match the file in your dotfiles directory
   - [ ] Option to always override (-f --force)
   - [ ] Add drop/delete command, this deletes dotfiles managed by paro (-d --down)
