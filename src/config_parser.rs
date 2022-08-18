@@ -1,4 +1,4 @@
-use crate::settings::ParoSettings;
+use crate::types::Settings;
 use config::{Config, File, FileFormat};
 
 pub struct ConfigParser {
@@ -25,6 +25,8 @@ impl ConfigParser {
         .unwrap()
         .set_default("directories", Vec::<String>::new())
         .unwrap()
+        .set_default("destination", String::new())
+        .unwrap()
         .set_default("hostname", String::new())
         .unwrap()
         .set_default("force", false)
@@ -38,7 +40,7 @@ impl ConfigParser {
     }
   }
 
-  pub fn into_settings(self) -> ParoSettings {
+  pub fn into_settings(self) -> Settings {
     self.config.try_deserialize().unwrap()
   }
 }
@@ -59,6 +61,7 @@ mod tests {
     assert_eq!(settings.excludes, Vec::<String>::new());
     assert_eq!(settings.includes, Vec::<String>::new());
     assert_eq!(settings.directories, Vec::<String>::new());
+    assert_eq!(settings.destination, String::new());
     assert_eq!(settings.hostname, String::new());
     assert_eq!(settings.force, false);
     assert_eq!(settings.down, false);
@@ -93,6 +96,12 @@ mod tests {
   fn test_config_hostname() {
     let settings = ConfigParser::new(&config_file()).into_settings();
     assert_eq!(settings.hostname, "hostname-in-config");
+  }
+
+  #[test]
+  fn test_config_destination() {
+    let settings = ConfigParser::new(&config_file()).into_settings();
+    assert_eq!(settings.destination, "/destination");
   }
 
   #[test]

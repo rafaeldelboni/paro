@@ -14,9 +14,10 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
   - [x] Option to override host name from config (-B --hostname)
   - [x] Add defaults to the internal settings structure if nothing is defined
   - [x] Read .dotfile folder(s) and files structure and store it
+  - [x] Consider multiple dotfiles folders configuration and reorganize file list (-a --add-dir)
   - [x] Consider ignore files and filters then from the list (-x --exclude)
+  - [x] Consider .dot files and filters then from the list
   - [ ] Consider inclusion list for extra files and reorganize file list (-i --include)
-  - [ ] Consider multiple dotfiles folders configuration and reorganize file list (-a --add-dir)
   - [ ] Consider tags and tag folders and reorganize file list (-t --tag)
   - [ ] Consider hosts and host folders and reorganize file list
   - [ ] Dialog to ask to override existing files if already exists in your home directory but does not match the file in your dotfiles directory
@@ -24,7 +25,6 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
   - [ ] Add drop/delete command, this deletes dotfiles managed by paro (-d --down)
   - [ ] Add dry-run command (-D --dry-run)
   - [ ] Add version command (-v --version)
-  - [ ] Consider .dot files and filters then from the list
 - CI Pipeline to build releases
   - [ ] Linux (x86_64)
   - [ ] Linux (arm)
@@ -33,7 +33,7 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
 - [ ] Documentation
 - [ ] Instalation Script (Like rustup install)
 - Extras Features
-  - [ ] Configuration to override the destination file path will be symlinked or copied (-o --override-path)
+  - [x] Configuration to override the destination file path will be symlinked or copied (-n --destination)
   - [ ] Sync command (delete files that are set to be ignored) (-S --sync)
   - [ ] Create an inclusion list for already doted files in your dotfiles directory to be included as symlink or copy (-I --include-dotted)
   - [ ] Split config files in two where you have configs and ignore files in different files
@@ -76,6 +76,10 @@ Print help information
 Install files that match <file-pattern>. Despite being excluded by the -x flag or a
 setting in the config.
 This can be repeated with additional patterns.
+
+#### -n, --destination <folder-name>
+Override the destination folder by <folder-name>. By default this value is the current
+user home directory.
 
 #### -t, --tag <tag>
 Do not install files that match <file-pattern>. Tagged files go in a directory named for
