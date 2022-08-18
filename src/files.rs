@@ -1,20 +1,25 @@
 use crate::types::PathBufPair;
 use regex::RegexSet;
 use std::path::{Path, PathBuf};
-use walkdir::WalkDir;
+use walkdir::{DirEntry, WalkDir};
 
-// TODO unit test
-pub fn change_root_dir(
+fn change_root_dir(
   origin_path: &Path,
   current: &String,
   new: &String,
 ) -> PathBuf {
-  let new_path = PathBuf::from(new);
-  new_path.join(
-    origin_path
-      .strip_prefix(Path::new(&current))
-      .unwrap_or(Path::new("")),
-  )
+  match origin_path.strip_prefix(Path::new(&current)) {
+    Ok(t) => PathBuf::from(new).join(t),
+    Err(_) => origin_path.to_path_buf(),
+  }
+}
+
+fn is_hidden(entry: &DirEntry) -> bool {
+  entry
+    .file_name()
+    .to_str()
+    .map(|s| s.starts_with('.'))
+    .unwrap_or(false)
 }
 
 // TODO use paro Settings as argument
@@ -27,10 +32,12 @@ pub fn walk_directories(
     for entry in WalkDir::new(&dir) {
       match entry {
         Ok(t) => {
-          paths.push(PathBufPair(
-            t.clone(),
-            change_root_dir(t.path().clone(), &dir, &destination),
-          ));
+          if !is_hidden(&t) {
+            paths.push(PathBufPair(
+              t.clone(),
+              change_root_dir(t.path(), &dir, &destination),
+            ));
+          }
         }
         Err(e) => println!("Error: {}", e),
       }
@@ -65,14 +72,13 @@ mod tests {
       .collect();
     str_files.sort();
 
-    assert_eq!(str_files.len(), 5);
+    assert_eq!(str_files.len(), 4);
     assert_eq!(
       str_files,
       vec![
         "tests/example-dotfiles/folder",
         "tests/example-dotfiles/folder/something.txt",
         "tests/example-dotfiles/tag-um",
-        "tests/example-dotfiles/tag-um/.file.txt",
         "tests/example-dotfiles/tag-um/file.txt",
       ]
     );
@@ -110,5 +116,32 @@ mod tests {
         "tests/example-dotfiles/tag-um/file.txt",
       ]
     );
+  }
+
+  #[test]
+  fn test_change_root_dir() {
+    let path = Path::new("/test/file.txt");
+    assert_eq!(
+      change_root_dir(path, &"/test".to_string(), &"/new".to_string())
+        .to_string_lossy(),
+      "/new/file.txt"
+    );
+
+    // should ignore if root is not in the current path
+    let path2 = Path::new("/test/file.txt");
+    assert_eq!(
+      change_root_dir(path2, &"/non-root".to_string(), &"/new".to_string())
+        .to_string_lossy(),
+      "/test/file.txt"
+    );
+  }
+
+  #[test]
+  fn test_is_hidden() {
+    let mut files = WalkDir::new("tests/example-dotfiles/tag-um/")
+      .sort_by_file_name()
+      .into_iter();
+    assert_eq!(is_hidden(&files.next().unwrap().unwrap()), false);
+    assert_eq!(is_hidden(&files.next().unwrap().unwrap()), true);
   }
 }
