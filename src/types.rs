@@ -3,7 +3,7 @@ use serde::Deserialize;
 use std::path::PathBuf;
 use walkdir::DirEntry;
 
-#[derive(Clone, Debug, Default, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Settings {
   pub tags: Vec<String>,
@@ -18,17 +18,41 @@ pub struct Settings {
 }
 
 impl Settings {
-  pub fn defaults() -> Settings {
-    Settings {
-      tags: Vec::<String>::new(),
-      excludes: Vec::<String>::new(),
-      includes: Vec::<String>::new(),
-      directories: vec![get_user_home() + "/.dotfiles"],
-      destination: get_user_home(),
-      hostname: get_hostname(),
-      force: false,
-      down: false,
-      dry_run: false,
+  pub fn with_defaults(self) -> Self {
+    Self {
+      tags: if self.tags.is_empty() {
+        Vec::<String>::new()
+      } else {
+        self.tags
+      },
+      excludes: if self.excludes.is_empty() {
+        Vec::<String>::new()
+      } else {
+        self.excludes
+      },
+      includes: if self.includes.is_empty() {
+        Vec::<String>::new()
+      } else {
+        self.includes
+      },
+      directories: if self.directories.is_empty() {
+        vec![get_user_home() + "/.dotfiles"]
+      } else {
+        self.directories
+      },
+      destination: if self.destination.is_empty() {
+        get_user_home()
+      } else {
+        self.destination
+      },
+      hostname: if self.hostname.is_empty() {
+        get_hostname()
+      } else {
+        self.hostname
+      },
+      force: self.force,
+      down: self.down,
+      dry_run: self.dry_run,
     }
   }
 
@@ -64,9 +88,25 @@ impl Settings {
       } else {
         other.hostname
       },
-      force: self.force | other.force,
-      down: self.down | other.down,
-      dry_run: self.dry_run | other.dry_run,
+      force: self.force || other.force,
+      down: self.down || other.down,
+      dry_run: self.dry_run || other.dry_run,
+    }
+  }
+}
+
+impl Default for Settings {
+  fn default() -> Self {
+    Settings {
+      tags: Vec::<String>::new(),
+      excludes: Vec::<String>::new(),
+      includes: Vec::<String>::new(),
+      directories: Vec::<String>::new(),
+      destination: "".to_string(),
+      hostname: "".to_string(),
+      force: false,
+      down: false,
+      dry_run: false,
     }
   }
 }
@@ -83,18 +123,34 @@ mod tests {
   }
 
   #[test]
-  fn test_merge() {
-    let settings_empty = Settings {
-      tags: Vec::<String>::new(),
-      excludes: Vec::<String>::new(),
-      includes: Vec::<String>::new(),
-      directories: Vec::<String>::new(),
-      destination: "".to_string(),
-      hostname: "".to_string(),
-      force: false,
-      down: false,
-      dry_run: false,
+  fn test_with_defaults() {
+    let settings_1 = Settings {
+      tags: to_string_vec(vec!["t1", "t1"]),
+      excludes: to_string_vec(vec!["e1", "e1"]),
+      includes: to_string_vec(vec!["i1", "i1"]),
+      directories: to_string_vec(vec!["d1", "d1"]),
+      destination: "dn1".to_string(),
+      hostname: "h1".to_string(),
+      force: true,
+      down: true,
+      dry_run: true,
     };
+
+    let settings_with_defaults = settings_1.clone().with_defaults();
+    assert_eq!(settings_with_defaults.tags, settings_1.tags);
+    assert_eq!(settings_with_defaults.excludes, settings_1.excludes);
+    assert_eq!(settings_with_defaults.includes, settings_1.includes);
+    assert_eq!(settings_with_defaults.directories, settings_1.directories);
+    assert_eq!(settings_with_defaults.destination, settings_1.destination);
+    assert_eq!(settings_with_defaults.hostname, settings_1.hostname);
+    assert_eq!(settings_with_defaults.force, settings_1.force);
+    assert_eq!(settings_with_defaults.down, settings_1.down);
+    assert_eq!(settings_with_defaults.dry_run, settings_1.dry_run);
+  }
+
+  #[test]
+  fn test_merge() {
+    let settings_empty: Settings = Default::default();
     let settings_1 = Settings {
       tags: to_string_vec(vec!["t1", "t1"]),
       excludes: to_string_vec(vec!["e1", "e1"]),
