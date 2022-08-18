@@ -1,4 +1,4 @@
-use crate::settings::ParoSettings;
+use crate::types::Settings;
 use clap::{App, Arg, ArgAction, ArgMatches, Command};
 
 pub struct ClapParser {
@@ -11,6 +11,14 @@ fn to_vec_string(matches: &ArgMatches, id: &str) -> Vec<String> {
     .unwrap_or_default()
     .map(|v| v.to_string())
     .collect()
+}
+
+// TODO unit test
+fn to_string_unwrap(matches: &ArgMatches, id: &str) -> String {
+  matches
+    .get_one::<String>(id)
+    .unwrap_or(&"".to_string())
+    .to_string()
 }
 
 impl ClapParser {
@@ -79,6 +87,19 @@ impl ClapParser {
           .action(ArgAction::Append),
       )
       .arg(
+        Arg::new("destination")
+          .short('n')
+          .long("destination")
+          .value_name("folder-name")
+          .help("Override the destination folder by <folder-name>.")
+          .long_help(
+            "Override the destination folder by <folder-name>. \
+             By default this value is the current user home directory.",
+          )
+          .takes_value(true)
+          .action(ArgAction::Set),
+      )
+      .arg(
         Arg::new("hostname")
           .short('B')
           .long("hostname")
@@ -128,21 +149,19 @@ impl ClapParser {
     Self { clap: app }
   }
 
-  pub fn into_settings(self, manual_args: Vec<&str>) -> ParoSettings {
+  pub fn into_settings(self, manual_args: Vec<&str>) -> Settings {
     let matches = if manual_args.is_empty() {
       self.clap.get_matches()
     } else {
       self.clap.get_matches_from(manual_args)
     };
-    ParoSettings {
+    Settings {
       tags: to_vec_string(&matches, "tags"),
       excludes: to_vec_string(&matches, "excludes"),
       includes: to_vec_string(&matches, "includes"),
       directories: to_vec_string(&matches, "directories"),
-      hostname: matches
-        .get_one::<String>("hostname")
-        .unwrap_or(&"".to_string())
-        .to_string(),
+      destination: to_string_unwrap(&matches, "destination"),
+      hostname: to_string_unwrap(&matches, "hostname"),
       force: matches.get_one::<bool>("force").copied().unwrap(),
       down: matches.get_one::<bool>("down").copied().unwrap(),
       dry_run: matches.get_one::<bool>("dry-run").copied().unwrap(),
@@ -178,6 +197,7 @@ mod tests {
     assert_eq!(settings.excludes, Vec::<String>::new());
     assert_eq!(settings.includes, Vec::<String>::new());
     assert_eq!(settings.directories, Vec::<String>::new());
+    assert_eq!(settings.destination, String::new());
     assert_eq!(settings.hostname, String::new());
     assert_eq!(settings.force, false);
     assert_eq!(settings.down, false);
@@ -237,5 +257,17 @@ mod tests {
       "will-override-my-machine",
     ]);
     assert_eq!(settings.hostname, "will-override-my-machine");
+  }
+
+  #[test]
+  fn test_clap_destination() {
+    let settings = ClapParser::new().into_settings(vec![
+      "paro",
+      "-n",
+      "/new/home",
+      "-n",
+      "/new/home2",
+    ]);
+    assert_eq!(settings.destination, "/new/home2");
   }
 }

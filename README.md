@@ -33,7 +33,7 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
 - [ ] Documentation
 - [ ] Instalation Script (Like rustup install)
 - Extras Features
-  - [ ] Configuration to override the destination file path will be symlinked or copied (-o --override-path)
+  - [x] Configuration to override the destination file path will be symlinked or copied (-n --destination)
   - [ ] Sync command (delete files that are set to be ignored) (-S --sync)
   - [ ] Create an inclusion list for already doted files in your dotfiles directory to be included as symlink or copy (-I --include-dotted)
   - [ ] Split config files in two where you have configs and ignore files in different files
@@ -76,6 +76,10 @@ Print help information
 Install files that match <file-pattern>. Despite being excluded by the -x flag or a
 setting in the config.
 This can be repeated with additional patterns.
+
+#### -n, --destination <folder-name>
+Override the destination folder by <folder-name>. By default this value is the current
+user home directory.
 
 #### -t, --tag <tag>
 Do not install files that match <file-pattern>. Tagged files go in a directory named for

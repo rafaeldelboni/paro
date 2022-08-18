@@ -1,26 +1,30 @@
 use crate::nix_helper::{get_hostname, get_user_home};
 use serde::Deserialize;
+use std::path::PathBuf;
+use walkdir::DirEntry;
 
 #[derive(Clone, Debug, Default, Deserialize)]
 #[serde(rename_all = "kebab-case")]
-pub struct ParoSettings {
+pub struct Settings {
   pub tags: Vec<String>,
   pub excludes: Vec<String>,
   pub includes: Vec<String>,
   pub directories: Vec<String>,
+  pub destination: String,
   pub hostname: String,
   pub force: bool,
   pub down: bool,
   pub dry_run: bool,
 }
 
-impl ParoSettings {
-  pub fn defaults() -> ParoSettings {
-    ParoSettings {
+impl Settings {
+  pub fn defaults() -> Settings {
+    Settings {
       tags: Vec::<String>::new(),
       excludes: Vec::<String>::new(),
       includes: Vec::<String>::new(),
       directories: vec![get_user_home() + "/.dotfiles"],
+      destination: get_user_home(),
       hostname: get_hostname(),
       force: false,
       down: false,
@@ -28,7 +32,7 @@ impl ParoSettings {
     }
   }
 
-  pub fn merge(self, other: ParoSettings) -> Self {
+  pub fn merge(self, other: Settings) -> Self {
     Self {
       tags: self
         .tags
@@ -50,6 +54,11 @@ impl ParoSettings {
         .into_iter()
         .chain(other.directories.into_iter())
         .collect(),
+      destination: if other.destination.is_empty() {
+        self.destination
+      } else {
+        other.destination
+      },
       hostname: if other.hostname.is_empty() {
         self.hostname
       } else {
@@ -62,6 +71,9 @@ impl ParoSettings {
   }
 }
 
+#[derive(Clone, Debug)]
+pub struct PathBufPair(pub DirEntry, pub PathBuf);
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -72,31 +84,34 @@ mod tests {
 
   #[test]
   fn test_merge() {
-    let settings_empty = ParoSettings {
+    let settings_empty = Settings {
       tags: Vec::<String>::new(),
       excludes: Vec::<String>::new(),
       includes: Vec::<String>::new(),
       directories: Vec::<String>::new(),
+      destination: "".to_string(),
       hostname: "".to_string(),
       force: false,
       down: false,
       dry_run: false,
     };
-    let settings_1 = ParoSettings {
+    let settings_1 = Settings {
       tags: to_string_vec(vec!["t1", "t1"]),
       excludes: to_string_vec(vec!["e1", "e1"]),
       includes: to_string_vec(vec!["i1", "i1"]),
       directories: to_string_vec(vec!["d1", "d1"]),
+      destination: "dn1".to_string(),
       hostname: "h1".to_string(),
       force: true,
       down: true,
       dry_run: true,
     };
-    let settings_2 = ParoSettings {
+    let settings_2 = Settings {
       tags: to_string_vec(vec!["t2", "t2"]),
       excludes: to_string_vec(vec!["e2", "e2"]),
       includes: to_string_vec(vec!["i2", "i2"]),
       directories: to_string_vec(vec!["d2", "d2"]),
+      destination: "dn2".to_string(),
       hostname: "h2".to_string(),
       force: false,
       down: false,
@@ -108,6 +123,7 @@ mod tests {
     assert_eq!(merged_settings.excludes, settings_1.excludes);
     assert_eq!(merged_settings.includes, settings_1.includes);
     assert_eq!(merged_settings.directories, settings_1.directories);
+    assert_eq!(merged_settings.destination, settings_1.destination);
     assert_eq!(merged_settings.hostname, settings_1.hostname);
     assert_eq!(merged_settings.force, settings_1.force);
     assert_eq!(merged_settings.down, settings_1.down);
@@ -130,6 +146,7 @@ mod tests {
       merged2_settings.directories,
       to_string_vec(vec!["d1", "d1", "d2", "d2"])
     );
+    assert_eq!(merged2_settings.destination, settings_2.destination);
     assert_eq!(merged2_settings.hostname, settings_2.hostname);
     assert_eq!(merged2_settings.force, settings_1.force);
     assert_eq!(merged2_settings.down, settings_1.down);
