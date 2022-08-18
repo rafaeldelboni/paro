@@ -29,18 +29,24 @@ pub fn walk_directories(
 ) -> Vec<PathBufPair> {
   let mut paths: Vec<PathBufPair> = Vec::<PathBufPair>::new();
   for dir in directories {
-    for entry in WalkDir::new(&dir) {
-      match entry {
-        Ok(t) => {
-          if !is_hidden(&t) {
-            paths.push(PathBufPair(
-              t.clone(),
-              change_root_dir(t.path(), &dir, &destination),
-            ));
+    let mut entries = WalkDir::new(&dir).into_iter();
+    loop {
+      match entries.next() {
+        None => break,
+        Some(Ok(entry)) => {
+          if is_hidden(&entry) {
+            if entry.file_type().is_dir() && entry.depth() > 0 {
+              entries.skip_current_dir();
+            }
+            continue;
           }
+          paths.push(PathBufPair(
+            entry.clone(),
+            change_root_dir(entry.path(), &dir, &destination),
+          ));
         }
-        Err(e) => println!("Error: {}", e),
-      }
+        Some(Err(err)) => println!("ERROR: {}", err),
+      };
     }
   }
   paths
