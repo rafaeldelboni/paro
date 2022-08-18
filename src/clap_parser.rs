@@ -13,7 +13,6 @@ fn to_vec_string(matches: &ArgMatches, id: &str) -> Vec<String> {
     .collect()
 }
 
-// TODO unit test
 fn to_string_unwrap(matches: &ArgMatches, id: &str) -> String {
   matches
     .get_one::<String>(id)
@@ -188,6 +187,15 @@ mod tests {
       to_vec_string(&matches, "excludes"),
       ["file.txt", "file2.txt", "file3.txt"]
     );
+  }
+
+  #[test]
+  fn test_to_string_unwrap() {
+    let matches =
+      ClapParser::new()
+        .clap
+        .get_matches_from(vec!["paro", "-n", "/super/dir"]);
+    assert_eq!(to_string_unwrap(&matches, "destination"), "/super/dir");
   }
 
   #[test]
