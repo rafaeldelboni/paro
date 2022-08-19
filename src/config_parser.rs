@@ -1,4 +1,4 @@
-use crate::types::Settings;
+use crate::settings::Settings;
 use config::{Config, File, FileFormat};
 
 pub struct ConfigParser {

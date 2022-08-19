@@ -1,7 +1,9 @@
-use crate::types::PathBufPair;
 use regex::RegexSet;
 use std::path::{Path, PathBuf};
 use walkdir::{DirEntry, WalkDir};
+
+#[derive(Clone, Debug)]
+pub struct PathActions(pub DirEntry, pub PathBuf);
 
 fn change_root_dir(
   origin_path: &Path,
@@ -26,8 +28,8 @@ fn is_hidden(entry: &DirEntry) -> bool {
 pub fn walk_directories(
   directories: Vec<String>,
   destination: String,
-) -> Vec<PathBufPair> {
-  let mut paths: Vec<PathBufPair> = Vec::<PathBufPair>::new();
+) -> Vec<PathActions> {
+  let mut paths: Vec<PathActions> = Vec::<PathActions>::new();
   for dir in directories {
     let mut entries = WalkDir::new(&dir).into_iter();
     loop {
@@ -40,7 +42,7 @@ pub fn walk_directories(
             }
             continue;
           }
-          paths.push(PathBufPair(
+          paths.push(PathActions(
             entry.clone(),
             change_root_dir(entry.path(), &dir, &destination),
           ));
@@ -52,7 +54,7 @@ pub fn walk_directories(
   paths
 }
 
-pub fn remove_files(files: &mut Vec<PathBufPair>, excludes: Vec<String>) {
+pub fn remove_files(files: &mut Vec<PathActions>, excludes: Vec<String>) {
   println!("{:?}", excludes);
   let set = RegexSet::new(excludes).unwrap();
   files.retain(|x| !set.is_match(x.0.path().to_str().unwrap()));
