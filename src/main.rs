@@ -2,7 +2,7 @@ mod clap_parser;
 mod config_parser;
 mod files;
 mod nix_helper;
-mod types;
+mod settings;
 
 use crate::{clap_parser::ClapParser, config_parser::ConfigParser};
 

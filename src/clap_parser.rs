@@ -1,4 +1,4 @@
-use crate::types::Settings;
+use crate::settings::Settings;
 use clap::{App, Arg, ArgAction, ArgMatches, Command};
 
 pub struct ClapParser {

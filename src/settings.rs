@@ -1,7 +1,5 @@
 use crate::nix_helper::{get_hostname, get_user_home};
 use serde::Deserialize;
-use std::path::PathBuf;
-use walkdir::DirEntry;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -110,9 +108,6 @@ impl Default for Settings {
     }
   }
 }
-
-#[derive(Clone, Debug)]
-pub struct PathBufPair(pub DirEntry, pub PathBuf);
 
 #[cfg(test)]
 mod tests {
