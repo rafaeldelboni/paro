@@ -1,3 +1,4 @@
+use crate::settings::Settings;
 use regex::RegexSet;
 use std::path::{Path, PathBuf};
 use walkdir::{DirEntry, WalkDir};
@@ -24,13 +25,8 @@ fn is_hidden(entry: &DirEntry) -> bool {
     .unwrap_or(false)
 }
 
-// TODO use paro Settings as argument
-pub fn walk_directories(
-  directories: Vec<String>,
-  destination: String,
-) -> Vec<PathActions> {
-  let mut paths: Vec<PathActions> = Vec::<PathActions>::new();
-  for dir in directories {
+pub fn select_files(files: &mut Vec<PathActions>, settings: &Settings) {
+  for dir in &settings.directories {
     let mut entries = WalkDir::new(&dir).into_iter();
     loop {
       match entries.next() {
@@ -42,22 +38,44 @@ pub fn walk_directories(
             }
             continue;
           }
-          paths.push(PathActions(
+          files.push(PathActions(
             entry.clone(),
-            change_root_dir(entry.path(), &dir, &destination),
+            change_root_dir(entry.path(), dir, &settings.destination),
           ));
         }
         Some(Err(err)) => println!("ERROR: {}", err),
       };
     }
   }
-  paths
 }
 
-pub fn remove_files(files: &mut Vec<PathActions>, excludes: Vec<String>) {
-  println!("{:?}", excludes);
-  let set = RegexSet::new(excludes).unwrap();
+pub fn exclude_files(files: &mut Vec<PathActions>, settings: &Settings) {
+  let set = RegexSet::new(settings.excludes.clone()).unwrap();
   files.retain(|x| !set.is_match(x.0.path().to_str().unwrap()));
+}
+
+pub fn include_files(files: &mut Vec<PathActions>, settings: &Settings) {
+  for file in &settings.includes {
+    let mut entries = WalkDir::new(&file).into_iter();
+    loop {
+      match entries.next() {
+        None => break,
+        Some(Ok(entry)) => {
+          let mut path = PathBuf::from(file);
+          path.pop();
+          files.push(PathActions(
+            entry.clone(),
+            change_root_dir(
+              entry.path(),
+              &path.to_str().unwrap_or("").to_owned(),
+              &settings.destination,
+            ),
+          ));
+        }
+        Some(Err(err)) => println!("ERROR: {}", err),
+      };
+    }
+  }
 }
 
 #[cfg(test)]
@@ -65,63 +83,92 @@ mod tests {
   use super::*;
 
   #[test]
-  fn test_walk_directories() {
-    let files = walk_directories(
-      vec![
-        "tests/example-dotfiles/folder".to_string(),
-        "tests/example-dotfiles/tag-um".to_string(),
-      ],
-      "/destiny".to_string(),
-    );
-    let mut str_files: Vec<String> = files
+  fn test_select_files() {
+    let mut settings = Settings::default();
+    let mut files: Vec<PathActions> = Vec::<PathActions>::new();
+    settings.directories = vec![
+      "tests/example-dotfiles/folder".to_string(),
+      "tests/example-dotfiles/tag-um".to_string(),
+    ];
+    settings.destination = "/destiny".to_string();
+    select_files(&mut files, &settings);
+
+    let mut str_dest_files: Vec<String> = files
       .clone()
       .into_iter()
-      .map(|e| e.0.path().to_str().unwrap().to_string())
+      .map(|e| e.1.to_str().unwrap().to_string())
       .collect();
-    str_files.sort();
+    str_dest_files.sort();
 
-    assert_eq!(str_files.len(), 4);
+    assert_eq!(str_dest_files.len(), 4);
     assert_eq!(
-      str_files,
+      str_dest_files,
       vec![
-        "tests/example-dotfiles/folder",
-        "tests/example-dotfiles/folder/something.txt",
-        "tests/example-dotfiles/tag-um",
-        "tests/example-dotfiles/tag-um/file.txt",
+        "/destiny/",
+        "/destiny/",
+        "/destiny/file.txt",
+        "/destiny/something.txt",
       ]
     );
   }
 
   #[test]
-  fn test_remove_files() {
-    let mut files = walk_directories(
-      vec![
-        "tests/example-dotfiles/folder".to_string(),
-        "tests/example-dotfiles/tag-um".to_string(),
-      ],
-      "/destiny".to_string(),
-    );
-    remove_files(
-      &mut files,
-      vec![
-        "tests/example-dotfiles/folder*".to_string(),
-        "tests/example-dotfiles/tag-um/.file.txt".to_string(),
-      ],
-    );
+  fn test_exclude_files() {
+    let mut settings = Settings::default();
+    let mut files: Vec<PathActions> = Vec::<PathActions>::new();
+    settings.directories = vec![
+      "tests/example-dotfiles/folder".to_string(),
+      "tests/example-dotfiles/tag-um".to_string(),
+    ];
+    settings.excludes = vec![
+      "tests/example-dotfiles/folder*".to_string(),
+      "tests/example-dotfiles/tag-um/.file.txt".to_string(),
+    ];
+    settings.destination = "/destiny".to_string();
+    select_files(&mut files, &settings);
+    exclude_files(&mut files, &settings);
 
-    let mut str_files: Vec<String> = files
+    let mut str_dest_files: Vec<String> = files
       .clone()
       .into_iter()
-      .map(|e| e.0.path().to_str().unwrap().to_string())
+      .map(|e| e.1.to_str().unwrap().to_string())
       .collect();
-    str_files.sort();
+    str_dest_files.sort();
 
-    assert_eq!(str_files.len(), 2);
+    assert_eq!(str_dest_files.len(), 2);
+    assert_eq!(str_dest_files, vec!["/destiny/", "/destiny/file.txt",]);
+  }
+
+  #[test]
+  fn test_include_files() {
+    let mut settings = Settings::default();
+    let mut files: Vec<PathActions> = Vec::<PathActions>::new();
+    settings.directories = vec![
+      "tests/example-dotfiles/folder".to_string(),
+      "tests/example-dotfiles/tag-um".to_string(),
+    ];
+    settings.includes =
+      vec!["tests/example-dotfiles/.ignored-file".to_string()];
+    settings.destination = "/destiny".to_string();
+    select_files(&mut files, &settings);
+    include_files(&mut files, &settings);
+
+    let mut str_dest_files: Vec<String> = files
+      .clone()
+      .into_iter()
+      .map(|e| e.1.to_str().unwrap().to_string())
+      .collect();
+    str_dest_files.sort();
+
+    assert_eq!(str_dest_files.len(), 5);
     assert_eq!(
-      str_files,
+      str_dest_files,
       vec![
-        "tests/example-dotfiles/tag-um",
-        "tests/example-dotfiles/tag-um/file.txt",
+        "/destiny/",
+        "/destiny/",
+        "/destiny/.ignored-file",
+        "/destiny/file.txt",
+        "/destiny/something.txt",
       ]
     );
   }
