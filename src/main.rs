@@ -20,6 +20,7 @@ fn main() {
   files::select_files(&mut files, &merged);
   files::exclude_files(&mut files, &merged);
   files::include_files(&mut files, &merged);
+  files::cleanup_special_folders(&mut files, &merged);
   // }
 
   println!("merged: {:?}", merged);
