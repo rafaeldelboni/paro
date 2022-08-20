@@ -136,13 +136,7 @@ mod tests {
     str_dest_files.sort();
 
     assert_eq!(str_dest_files.len(), 2);
-    assert_eq!(
-      str_dest_files,
-      vec![
-        "/destiny/",
-        "/destiny/file.txt",
-      ]
-    );
+    assert_eq!(str_dest_files, vec!["/destiny/", "/destiny/file.txt",]);
   }
 
   #[test]
