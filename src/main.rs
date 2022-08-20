@@ -4,7 +4,9 @@ mod files;
 mod nix_helper;
 mod settings;
 
-use crate::{clap_parser::ClapParser, config_parser::ConfigParser};
+use crate::{
+  clap_parser::ClapParser, config_parser::ConfigParser, files::PathActions,
+};
 
 fn main() {
   let mut config_files = nix_helper::get_default_config_files();
@@ -14,11 +16,10 @@ fn main() {
   let merged = config.merge(clap).with_defaults();
 
   // { TODO move this to a function
-  let mut files = files::walk_directories(
-    merged.directories.clone(),
-    merged.destination.clone(),
-  );
-  files::remove_files(&mut files, merged.excludes.clone());
+  let mut files: Vec<PathActions> = Vec::<PathActions>::new();
+  files::select_files(&mut files, &merged);
+  files::exclude_files(&mut files, &merged);
+  files::include_files(&mut files, &merged);
   // }
 
   println!("merged: {:?}", merged);
