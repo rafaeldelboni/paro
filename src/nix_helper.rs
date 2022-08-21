@@ -1,15 +1,5 @@
 use nix::unistd::{gethostname, Uid, User};
 
-pub fn remove_last_slash(entry: String) -> String {
-  let mut chars = entry.chars();
-  if chars.clone().last().unwrap_or_default() == '/' {
-    chars.next_back();
-    chars.as_str().to_string()
-  } else {
-    entry
-  }
-}
-
 pub fn get_hostname() -> String {
   let mut buf = [0u8; 64];
   let hostname_cstr = gethostname(&mut buf).expect("Failed getting hostname");
@@ -37,16 +27,4 @@ pub fn get_default_config_files() -> Vec<String> {
   let fourth_config =
     format!("{}{}", home_dir, "/.dotfiles/config/paro/parorc");
   vec![first_config, second_config, third_config, fourth_config]
-}
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn test_remove_last_slash() {
-    assert_eq!("", remove_last_slash("".to_string()));
-    assert_eq!("folda_name", remove_last_slash("folda_name".to_string()));
-    assert_eq!("folda_name", remove_last_slash("folda_name/".to_string()));
-  }
 }

@@ -1,4 +1,4 @@
-use crate::{nix_helper::remove_last_slash, settings::Settings};
+use crate::settings::{remove_last_slash, Settings};
 use regex::RegexSet;
 use std::path::{Path, PathBuf};
 use walkdir::{DirEntry, WalkDir};
@@ -25,19 +25,25 @@ fn is_hidden(entry: &DirEntry) -> bool {
     .unwrap_or(false)
 }
 
-pub fn select_files(files: &mut Vec<PathActions>, settings: &Settings) {
-  let mut special_folders = settings
-    .tags
-    .clone()
+fn in_special_folder(
+  entry: &DirEntry,
+  special_folders: &[String],
+  set: &RegexSet,
+) -> Option<String> {
+  let in_special_folder: Vec<_> = set
+    .matches(entry.path().to_str().unwrap())
     .into_iter()
-    .map(|t| "tag-".to_string() + &t)
-    .collect::<Vec<String>>();
-
-  if !settings.hostname.is_empty() {
-    special_folders.push("host-".to_string() + &settings.hostname);
+    .collect();
+  if !in_special_folder.is_empty() {
+    Some(special_folders[in_special_folder[0]].clone())
+  } else {
+    None
   }
+}
 
-  let set = RegexSet::new(&special_folders).unwrap();
+pub fn select_files(files: &mut Vec<PathActions>, settings: &Settings) {
+  let special_folders = &settings.special_folder_vec();
+  let set = RegexSet::new(special_folders).unwrap();
 
   for directory in &settings.directories {
     let dir = remove_last_slash(directory.to_owned());
@@ -53,16 +59,14 @@ pub fn select_files(files: &mut Vec<PathActions>, settings: &Settings) {
             continue;
           }
 
-          let in_special_folder: Vec<_> = set
-            .matches(entry.path().to_str().unwrap())
-            .into_iter()
-            .collect();
-          if !in_special_folder.is_empty() {
+          if let Some(special_folder) =
+            in_special_folder(&entry, special_folders, &set)
+          {
             files.push(PathActions(
               entry.clone(),
               change_root_dir(
                 entry.path(),
-                &format!("{}/{}", dir, &special_folders[in_special_folder[0]]),
+                &format!("{}/{}", dir, special_folder),
                 &settings.destination,
               ),
             ));
@@ -110,9 +114,7 @@ pub fn cleanup_special_folders(
   settings: &Settings,
 ) {
   let dir = remove_last_slash(settings.destination.clone());
-  let set =
-    RegexSet::new(vec![dir.clone() + &"/tag-", dir.clone() + &"/host-"])
-      .unwrap();
+  let set = RegexSet::new(vec![dir.clone() + "/tag-", dir + "/host-"]).unwrap();
   files.retain(|x| !set.is_match(x.1.to_str().unwrap()));
 }
 

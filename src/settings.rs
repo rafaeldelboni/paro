@@ -1,6 +1,16 @@
 use crate::nix_helper::{get_hostname, get_user_home};
 use serde::Deserialize;
 
+pub fn remove_last_slash(entry: String) -> String {
+  let mut chars = entry.chars();
+  if chars.clone().last().unwrap_or_default() == '/' {
+    chars.next_back();
+    chars.as_str().to_string()
+  } else {
+    entry
+  }
+}
+
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Settings {
@@ -90,6 +100,21 @@ impl Settings {
       down: self.down || other.down,
       dry_run: self.dry_run || other.dry_run,
     }
+  }
+
+  pub fn special_folder_vec(&self) -> Vec<String> {
+    let mut special_folders = self
+      .tags
+      .clone()
+      .into_iter()
+      .map(|t| "tag-".to_string() + &t)
+      .collect::<Vec<String>>();
+
+    if !self.hostname.is_empty() {
+      special_folders.push("host-".to_string() + &self.hostname);
+    }
+
+    special_folders
   }
 }
 
@@ -202,5 +227,12 @@ mod tests {
     assert_eq!(merged2_settings.force, settings_1.force);
     assert_eq!(merged2_settings.down, settings_1.down);
     assert_eq!(merged2_settings.dry_run, settings_1.dry_run);
+  }
+
+  #[test]
+  fn test_remove_last_slash() {
+    assert_eq!("", remove_last_slash("".to_string()));
+    assert_eq!("folda_name", remove_last_slash("folda_name".to_string()));
+    assert_eq!("folda_name", remove_last_slash("folda_name/".to_string()));
   }
 }
