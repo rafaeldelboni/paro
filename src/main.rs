@@ -1,11 +1,10 @@
-mod clap_parser;
-mod config_parser;
 mod files;
 mod nix_helper;
+mod parsers;
 mod settings;
 
 use crate::{
-  clap_parser::ClapParser, config_parser::ConfigParser, files::PathActions,
+  files::PathActions, parsers::clap::ClapParser, parsers::config::ConfigParser,
 };
 
 fn main() {
