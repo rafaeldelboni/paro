@@ -14,13 +14,8 @@ fn main() {
   let clap = ClapParser::new().into_settings(vec![]);
   let merged = config.merge(clap).with_defaults();
 
-  // { TODO move this to a function
   let mut files: FileActions = FileActions::new(merged.clone());
-  files.select_files();
-  files.exclude_files();
-  files.include_files();
-  files.cleanup_special_folders();
-  // }
+  files.build();
 
   println!("merged: {:?}", merged);
   println!("files:");

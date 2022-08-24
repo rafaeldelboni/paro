@@ -149,6 +149,13 @@ impl FileActions {
       .actions
       .retain(|k, _v| !set.is_match(k.to_str().unwrap()));
   }
+
+  pub fn build(&mut self) {
+    self.select_files();
+    self.exclude_files();
+    self.include_files();
+    self.cleanup_special_folders();
+  }
 }
 
 #[cfg(test)]
