@@ -9,7 +9,7 @@ use walkdir::{DirEntry, WalkDir};
 pub struct FileEntry {
   pub path: PathBuf,
   pub file_type: FileType,
-  pub depth: usize,
+  pub depth: isize,
 }
 
 fn change_root_dir(
@@ -47,11 +47,12 @@ fn in_special_folder(
   }
 }
 
-fn to_file_entry(entry: DirEntry, depth_adjust: usize) -> FileEntry {
+// TODO unit test
+fn to_file_entry(entry: DirEntry, depth_adjust: isize) -> FileEntry {
   FileEntry {
     path: entry.path().to_path_buf(),
     file_type: entry.file_type(),
-    depth: entry.depth() + depth_adjust,
+    depth: (entry.depth() as isize) + depth_adjust,
   }
 }
 
@@ -98,7 +99,7 @@ impl FileActions {
                   &format!("{}/{}", dir, special_folder),
                   &self.settings.destination,
                 ),
-                to_file_entry(entry, 1),
+                to_file_entry(entry, -1),
               );
               continue;
             }
@@ -219,6 +220,7 @@ mod tests {
     let str_dest_files: Vec<String> = to_str_dest_files(files);
 
     assert_eq!(str_dest_files.len(), 5);
+    // TODO add depth check
     assert_eq!(
       str_dest_files,
       vec![
