@@ -1,10 +1,16 @@
 use crate::settings::{remove_last_slash, Settings};
 use regex::RegexSet;
+use std::collections::BTreeMap;
+use std::fs::FileType;
 use std::path::{Path, PathBuf};
 use walkdir::{DirEntry, WalkDir};
 
 #[derive(Clone, Debug)]
-pub struct PathActions(pub DirEntry, pub PathBuf);
+pub struct FileEntry {
+  pub path: PathBuf,
+  pub file_type: FileType,
+  pub depth: isize,
+}
 
 fn change_root_dir(
   origin_path: &Path,
@@ -41,101 +47,143 @@ fn in_special_folder(
   }
 }
 
-pub fn select_files(files: &mut Vec<PathActions>, settings: &Settings) {
-  let special_folders = &settings.special_folder_vec();
-  let set = RegexSet::new(special_folders).unwrap();
+// TODO unit test
+fn to_file_entry(entry: DirEntry, depth_adjust: isize) -> FileEntry {
+  FileEntry {
+    path: entry.path().to_path_buf(),
+    file_type: entry.file_type(),
+    depth: (entry.depth() as isize) + depth_adjust,
+  }
+}
 
-  for directory in &settings.directories {
-    let dir = remove_last_slash(directory.to_owned());
-    let mut entries = WalkDir::new(&dir).into_iter();
-    loop {
-      match entries.next() {
-        None => break,
-        Some(Ok(entry)) => {
-          if is_hidden(&entry) {
-            if entry.file_type().is_dir() && entry.depth() > 0 {
-              entries.skip_current_dir();
-            }
-            continue;
-          }
+type Actions = BTreeMap<PathBuf, FileEntry>;
 
-          if let Some(special_folder) =
-            in_special_folder(&entry, special_folders, &set)
-          {
-            files.push(PathActions(
-              entry.clone(),
-              change_root_dir(
-                entry.path(),
-                &format!("{}/{}", dir, special_folder),
-                &settings.destination,
-              ),
-            ));
-            continue;
-          }
+#[derive(Clone, Debug)]
+pub struct FileActions {
+  settings: Settings,
+  pub actions: Actions,
+}
 
-          files.push(PathActions(
-            entry.clone(),
-            change_root_dir(entry.path(), &dir, &settings.destination),
-          ));
-        }
-        Some(Err(err)) => println!("ERROR: {}", err),
-      };
+impl FileActions {
+  pub fn new(settings: Settings) -> Self {
+    Self {
+      settings,
+      actions: Actions::new(),
     }
   }
-}
 
-pub fn exclude_files(files: &mut Vec<PathActions>, settings: &Settings) {
-  let set = RegexSet::new(settings.excludes.clone()).unwrap();
-  files.retain(|x| !set.is_match(x.0.path().to_str().unwrap()));
-}
+  pub fn select_files(&mut self) {
+    let special_folders = &self.settings.special_folder_vec();
+    let set = RegexSet::new(special_folders).unwrap();
 
-pub fn include_files(files: &mut Vec<PathActions>, settings: &Settings) {
-  for file in &settings.includes {
-    WalkDir::new(&file).into_iter().for_each(|e| match e {
-      Ok(entry) => {
-        let mut path = PathBuf::from(file);
-        path.pop();
-        files.push(PathActions(
-          entry.clone(),
-          change_root_dir(
-            entry.path(),
-            &path.to_str().unwrap_or("").to_owned(),
-            &settings.destination,
-          ),
-        ));
+    for directory in &self.settings.directories {
+      let dir = remove_last_slash(directory.to_owned());
+      let mut entries = WalkDir::new(&dir).into_iter();
+      loop {
+        match entries.next() {
+          None => break,
+          Some(Ok(entry)) => {
+            if is_hidden(&entry) {
+              if entry.file_type().is_dir() && entry.depth() > 0 {
+                entries.skip_current_dir();
+              }
+              continue;
+            }
+
+            if let Some(special_folder) =
+              in_special_folder(&entry, special_folders, &set)
+            {
+              self.actions.insert(
+                change_root_dir(
+                  entry.path(),
+                  &format!("{}/{}", dir, special_folder),
+                  &self.settings.destination,
+                ),
+                to_file_entry(entry, -1),
+              );
+              continue;
+            }
+
+            self.actions.insert(
+              change_root_dir(entry.path(), &dir, &self.settings.destination),
+              to_file_entry(entry, 0),
+            );
+          }
+          Some(Err(err)) => println!("ERROR: {}", err),
+        };
       }
-      Err(err) => println!("ERROR: {}", err),
-    });
+    }
   }
-}
 
-pub fn cleanup_special_folders(
-  files: &mut Vec<PathActions>,
-  settings: &Settings,
-) {
-  let dir = remove_last_slash(settings.destination.clone());
-  let set = RegexSet::new(vec![dir.clone() + "/tag-", dir + "/host-"]).unwrap();
-  files.retain(|x| !set.is_match(x.1.to_str().unwrap()));
+  pub fn exclude_files(&mut self) {
+    let set = RegexSet::new(self.settings.excludes.clone()).unwrap();
+    self
+      .actions
+      .retain(|_k, v| !set.is_match(v.path.to_str().unwrap()));
+  }
+
+  pub fn include_files(&mut self) {
+    for file in &self.settings.includes {
+      WalkDir::new(&file).into_iter().for_each(|e| match e {
+        Ok(entry) => {
+          let mut path = PathBuf::from(file);
+          path.pop();
+          self.actions.insert(
+            change_root_dir(
+              entry.path(),
+              &path.to_str().unwrap_or("").to_owned(),
+              &self.settings.destination,
+            ),
+            to_file_entry(entry, 0),
+          );
+        }
+        Err(err) => println!("ERROR: {}", err),
+      });
+    }
+  }
+
+  pub fn cleanup_special_folders(&mut self) {
+    let dir = remove_last_slash(self.settings.destination.clone());
+    let set =
+      RegexSet::new(vec![dir.clone() + "/tag-", dir + "/host-"]).unwrap();
+    self
+      .actions
+      .retain(|k, _v| !set.is_match(k.to_str().unwrap()));
+  }
+
+  pub fn build(&mut self) {
+    self.select_files();
+    self.exclude_files();
+    self.include_files();
+    self.cleanup_special_folders();
+  }
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
 
+  fn to_str_dest_files(files: FileActions) -> Vec<String> {
+    let mut str_dest_files: Vec<String> = files
+      .actions
+      .clone()
+      .into_iter()
+      .map(|(k, _v)| k.to_str().unwrap().to_string())
+      .collect();
+    str_dest_files.sort();
+    str_dest_files
+  }
+
   #[test]
   fn test_select_files() {
     let mut settings = Settings::default();
-    let mut files: Vec<PathActions> = Vec::<PathActions>::new();
     settings.directories = vec!["tests/example-dotfiles/".to_string()];
     settings.destination = "/destiny".to_string();
-    select_files(&mut files, &settings);
+    let mut files: FileActions = FileActions::new(settings);
 
-    let mut str_dest_files: Vec<String> = files
-      .clone()
-      .into_iter()
-      .map(|e| e.1.to_str().unwrap().to_string())
-      .collect();
-    str_dest_files.sort();
+    files.select_files();
+
+    let str_dest_files: Vec<String> = to_str_dest_files(files);
 
     assert_eq!(str_dest_files.len(), 12);
     assert_eq!(
@@ -160,30 +208,23 @@ mod tests {
   #[test]
   fn test_select_files_with_tag_host() {
     let mut settings = Settings::default();
-    let mut files: Vec<PathActions> = Vec::<PathActions>::new();
     settings.directories = vec!["tests/example-dotfiles/".to_string()];
     settings.destination = "/destiny/".to_string();
     settings.tags = vec!["um".to_string()];
     settings.hostname = "dois".to_string();
+    let mut files: FileActions = FileActions::new(settings);
 
-    select_files(&mut files, &settings);
-    cleanup_special_folders(&mut files, &settings);
+    files.select_files();
+    files.cleanup_special_folders();
 
-    let mut str_dest_files: Vec<String> = files
-      .clone()
-      .into_iter()
-      .map(|e| e.1.to_str().unwrap().to_string())
-      .collect();
-    str_dest_files.sort();
+    let str_dest_files: Vec<String> = to_str_dest_files(files);
 
-    assert_eq!(str_dest_files.len(), 8);
+    assert_eq!(str_dest_files.len(), 5);
+    // TODO add depth check
     assert_eq!(
       str_dest_files,
       vec![
         "/destiny/",
-        "/destiny/",
-        "/destiny/",
-        "/destiny/file.txt",
         "/destiny/file.txt",
         "/destiny/folder",
         "/destiny/folder/something.txt",
@@ -195,7 +236,6 @@ mod tests {
   #[test]
   fn test_exclude_files() {
     let mut settings = Settings::default();
-    let mut files: Vec<PathActions> = Vec::<PathActions>::new();
     settings.directories = vec![
       "tests/example-dotfiles/folder".to_string(),
       "tests/example-dotfiles/tag-um".to_string(),
@@ -205,15 +245,12 @@ mod tests {
       "tests/example-dotfiles/tag-um/.file.txt".to_string(),
     ];
     settings.destination = "/destiny".to_string();
-    select_files(&mut files, &settings);
-    exclude_files(&mut files, &settings);
+    let mut files: FileActions = FileActions::new(settings);
 
-    let mut str_dest_files: Vec<String> = files
-      .clone()
-      .into_iter()
-      .map(|e| e.1.to_str().unwrap().to_string())
-      .collect();
-    str_dest_files.sort();
+    files.select_files();
+    files.exclude_files();
+
+    let str_dest_files: Vec<String> = to_str_dest_files(files);
 
     assert_eq!(str_dest_files.len(), 2);
     assert_eq!(str_dest_files, vec!["/destiny/", "/destiny/file.txt",]);
@@ -222,7 +259,6 @@ mod tests {
   #[test]
   fn test_include_files() {
     let mut settings = Settings::default();
-    let mut files: Vec<PathActions> = Vec::<PathActions>::new();
     settings.directories = vec![
       "tests/example-dotfiles/folder".to_string(),
       "tests/example-dotfiles/tag-um".to_string(),
@@ -230,21 +266,17 @@ mod tests {
     settings.includes =
       vec!["tests/example-dotfiles/.ignored-file".to_string()];
     settings.destination = "/destiny".to_string();
-    select_files(&mut files, &settings);
-    include_files(&mut files, &settings);
+    let mut files: FileActions = FileActions::new(settings);
 
-    let mut str_dest_files: Vec<String> = files
-      .clone()
-      .into_iter()
-      .map(|e| e.1.to_str().unwrap().to_string())
-      .collect();
-    str_dest_files.sort();
+    files.select_files();
+    files.include_files();
 
-    assert_eq!(str_dest_files.len(), 5);
+    let str_dest_files: Vec<String> = to_str_dest_files(files);
+
+    assert_eq!(str_dest_files.len(), 4);
     assert_eq!(
       str_dest_files,
       vec![
-        "/destiny/",
         "/destiny/",
         "/destiny/.ignored-file",
         "/destiny/file.txt",
