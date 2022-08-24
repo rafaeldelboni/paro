@@ -5,7 +5,7 @@ use std::fs::FileType;
 use std::path::{Path, PathBuf};
 use walkdir::{DirEntry, WalkDir};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct FileEntry {
   pub path: PathBuf,
   pub file_type: FileType,
@@ -47,7 +47,6 @@ fn in_special_folder(
   }
 }
 
-// TODO unit test
 fn to_file_entry(entry: DirEntry, depth_adjust: isize) -> FileEntry {
   FileEntry {
     path: entry.path().to_path_buf(),
@@ -217,18 +216,25 @@ mod tests {
     files.select_files();
     files.cleanup_special_folders();
 
-    let str_dest_files: Vec<String> = to_str_dest_files(files);
+    let mut str_dest_files: Vec<String> = files
+      .actions
+      .clone()
+      .into_iter()
+      .map(|(k, v)| {
+        k.to_str().unwrap().to_string() + ":" + &v.depth.to_string()
+      })
+      .collect();
+    str_dest_files.sort();
 
     assert_eq!(str_dest_files.len(), 5);
-    // TODO add depth check
     assert_eq!(
       str_dest_files,
       vec![
-        "/destiny/",
-        "/destiny/file.txt",
-        "/destiny/folder",
-        "/destiny/folder/something.txt",
-        "/destiny/normal-file.txt",
+        "/destiny/:0",
+        "/destiny/file.txt:1",
+        "/destiny/folder/something.txt:2",
+        "/destiny/folder:1",
+        "/destiny/normal-file.txt:1",
       ]
     );
   }
@@ -310,5 +316,33 @@ mod tests {
       .into_iter();
     assert_eq!(is_hidden(&files.next().unwrap().unwrap()), false);
     assert_eq!(is_hidden(&files.next().unwrap().unwrap()), true);
+  }
+
+  #[test]
+  fn test_to_file_entry() {
+    let mut files = WalkDir::new("tests/example-dotfiles/tag-um/")
+      .sort_by_file_name()
+      .into_iter();
+
+    let file_one = files.next().unwrap().unwrap();
+    let file_two = files.next().unwrap().unwrap();
+
+    assert_eq!(
+      to_file_entry(file_one.clone(), 2),
+      FileEntry {
+        path: file_one.path().to_path_buf(),
+        file_type: file_one.file_type(),
+        depth: 2,
+      }
+    );
+
+    assert_eq!(
+      to_file_entry(file_two.clone(), 0),
+      FileEntry {
+        path: file_two.path().to_path_buf(),
+        file_type: file_two.file_type(),
+        depth: 1,
+      }
+    );
   }
 }
