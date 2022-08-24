@@ -4,7 +4,7 @@ mod parsers;
 mod settings;
 
 use crate::{
-  files::PathActions, parsers::clap::ClapParser, parsers::config::ConfigParser,
+  files::FileActions, parsers::clap::ClapParser, parsers::config::ConfigParser,
 };
 
 fn main() {
@@ -15,16 +15,16 @@ fn main() {
   let merged = config.merge(clap).with_defaults();
 
   // { TODO move this to a function
-  let mut files: Vec<PathActions> = Vec::<PathActions>::new();
-  files::select_files(&mut files, &merged);
-  files::exclude_files(&mut files, &merged);
-  files::include_files(&mut files, &merged);
-  files::cleanup_special_folders(&mut files, &merged);
+  let mut files: FileActions = FileActions::new(merged.clone());
+  files.select_files();
+  files.exclude_files();
+  files.include_files();
+  files.cleanup_special_folders();
   // }
 
   println!("merged: {:?}", merged);
   println!("files:");
-  for file in files {
-    println!("{:?} {:?} -> {:?}", file.0.depth(), file.0.path(), file.1);
+  for (key, value) in files.actions {
+    println!("{:?} {:?} -> {:?}", value.depth, value.path, key);
   }
 }
