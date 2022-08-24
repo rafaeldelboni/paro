@@ -55,10 +55,6 @@ fn to_file_entry(entry: DirEntry, depth_adjust: usize) -> FileEntry {
   }
 }
 
-trait FileActionsa<T> {
-  fn select_files(file: &mut T, settings: &Settings);
-}
-
 type Actions = BTreeMap<PathBuf, FileEntry>;
 
 #[derive(Clone, Debug)]
@@ -173,9 +169,10 @@ mod tests {
   #[test]
   fn test_select_files() {
     let mut settings = Settings::default();
-    let mut files: FileActions = FileActions::new(settings);
     settings.directories = vec!["tests/example-dotfiles/".to_string()];
     settings.destination = "/destiny".to_string();
+    let mut files: FileActions = FileActions::new(settings);
+
     files.select_files();
 
     let str_dest_files: Vec<String> = to_str_dest_files(files);
@@ -203,11 +200,11 @@ mod tests {
   #[test]
   fn test_select_files_with_tag_host() {
     let mut settings = Settings::default();
-    let mut files: FileActions = FileActions::new(settings);
     settings.directories = vec!["tests/example-dotfiles/".to_string()];
     settings.destination = "/destiny/".to_string();
     settings.tags = vec!["um".to_string()];
     settings.hostname = "dois".to_string();
+    let mut files: FileActions = FileActions::new(settings);
 
     files.select_files();
     files.cleanup_special_folders();
@@ -230,7 +227,6 @@ mod tests {
   #[test]
   fn test_exclude_files() {
     let mut settings = Settings::default();
-    let mut files: FileActions = FileActions::new(settings);
     settings.directories = vec![
       "tests/example-dotfiles/folder".to_string(),
       "tests/example-dotfiles/tag-um".to_string(),
@@ -240,6 +236,8 @@ mod tests {
       "tests/example-dotfiles/tag-um/.file.txt".to_string(),
     ];
     settings.destination = "/destiny".to_string();
+    let mut files: FileActions = FileActions::new(settings);
+
     files.select_files();
     files.exclude_files();
 
@@ -252,7 +250,6 @@ mod tests {
   #[test]
   fn test_include_files() {
     let mut settings = Settings::default();
-    let mut files: FileActions = FileActions::new(settings);
     settings.directories = vec![
       "tests/example-dotfiles/folder".to_string(),
       "tests/example-dotfiles/tag-um".to_string(),
@@ -260,6 +257,8 @@ mod tests {
     settings.includes =
       vec!["tests/example-dotfiles/.ignored-file".to_string()];
     settings.destination = "/destiny".to_string();
+    let mut files: FileActions = FileActions::new(settings);
+
     files.select_files();
     files.include_files();
 
