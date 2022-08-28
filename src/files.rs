@@ -86,7 +86,7 @@ impl FileActions {
         match entries.next() {
           None => break,
           Some(Ok(entry)) => {
-            if is_hidden(&entry.file_name()) {
+            if is_hidden(entry.file_name()) {
               if entry.file_type().is_dir() && entry.depth() > 0 {
                 entries.skip_current_dir();
               }
@@ -165,7 +165,7 @@ impl FileActions {
     let mut new_actions = Actions::new();
     for (key, value) in self.actions.clone() {
       if value.depth > 0
-        && !is_hidden(&key.file_name().unwrap_or_else(|| key.as_os_str()))
+        && !is_hidden(key.file_name().unwrap_or(key.as_os_str()))
       {
         new_actions.insert(
           change_root_dir(
@@ -393,7 +393,10 @@ mod tests {
     let mut files = WalkDir::new("tests/example-dotfiles/tag-um/")
       .sort_by_file_name()
       .into_iter();
-    assert_eq!(is_hidden(&files.next().unwrap().unwrap().file_name()), false);
+    assert_eq!(
+      is_hidden(&files.next().unwrap().unwrap().file_name()),
+      false
+    );
     assert_eq!(is_hidden(&files.next().unwrap().unwrap().file_name()), true);
   }
 
