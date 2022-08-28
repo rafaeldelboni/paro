@@ -150,11 +150,31 @@ impl FileActions {
       .retain(|k, _v| !set.is_match(k.to_str().unwrap()));
   }
 
+  pub fn hide_files(&mut self) {
+    let mut new_actions = Actions::new();
+    for (key, value) in self.actions.clone() {
+      if value.depth > 0 {
+        new_actions.insert(
+          match key.strip_prefix(Path::new(&self.settings.destination)) {
+            Ok(t) => PathBuf::from(self.settings.destination.to_string())
+              .join(format!("{}{}", ".", t.to_string_lossy().to_string())),
+            Err(_) => key.to_path_buf(),
+          },
+          value
+        );
+      } else {
+        new_actions.insert(key, value);
+      }
+    }
+    self.actions = new_actions
+  }
+
   pub fn build(&mut self) {
     self.select_files();
     self.exclude_files();
     self.include_files();
     self.cleanup_special_folders();
+    self.hide_files();
   }
 }
 
@@ -200,6 +220,38 @@ mod tests {
         "/destiny/tag-dois/file.txt",
         "/destiny/tag-um",
         "/destiny/tag-um/file.txt",
+      ]
+    );
+  }
+
+  #[test]
+  fn test_hide_files() {
+    let mut settings = Settings::default();
+    settings.directories = vec!["tests/example-dotfiles/".to_string()];
+    settings.destination = "/destiny".to_string();
+    let mut files: FileActions = FileActions::new(settings);
+
+    files.select_files();
+    files.hide_files();
+
+    let str_dest_files: Vec<String> = to_str_dest_files(files);
+
+    assert_eq!(str_dest_files.len(), 12);
+    assert_eq!(
+      str_dest_files,
+      vec![
+        "/destiny/",
+        "/destiny/.folder",
+        "/destiny/.folder/something.txt",
+        "/destiny/.host-dois",
+        "/destiny/.host-dois/file.txt",
+        "/destiny/.host-um",
+        "/destiny/.host-um/file.txt",
+        "/destiny/.normal-file.txt",
+        "/destiny/.tag-dois",
+        "/destiny/.tag-dois/file.txt",
+        "/destiny/.tag-um",
+        "/destiny/.tag-um/file.txt",
       ]
     );
   }
