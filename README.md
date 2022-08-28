@@ -20,7 +20,7 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
   - [x] Consider inclusion list for extra files and reorganize file list (-i --include)
   - [x] Consider tags and tag folders and reorganize file list (-t --tag)
   - [x] Consider hosts and host folders and reorganize file list
-  - [ ] Make the top level files hidden in the destination file list
+  - [x] Make the top level files hidden in the destination file list
   - [ ] Get action list and link/copy the files
   - [ ] Dialog to ask to override existing files if already exists in your home directory but does not match the file in your dotfiles directory
   - [ ] Option to always override (-f --force)
@@ -33,6 +33,7 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
   - [ ] Macos (x86_64)
   - [ ] Macos (arm)
 - [ ] Documentation
+- [ ] Integration tests
 - [ ] Instalation Script (Like rustup install)
 - Extras Features
   - [x] Configuration to override the destination file path will be symlinked or copied (-n --destination)
@@ -44,6 +45,7 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
   - [ ] Skip hooks (-K --skip-hooks)
   - [ ] Option to always copy files instead symlinking them. (-C --copy)
   - [ ] Consider inclusion list to always copy files instead symlinking them. (-c --include-copy)
+  - [ ] Consider argument list to don't hide the file in the destination. (-N --no-hide)
   - [ ] Option to install git hooks to run paro sync on post-commit and post-merge hooks
 
 ## CLI Usage
