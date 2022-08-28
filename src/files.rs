@@ -16,9 +16,16 @@ fn change_root_dir(
   origin_path: &Path,
   current: &String,
   new: &String,
+  hide: bool,
 ) -> PathBuf {
   match origin_path.strip_prefix(Path::new(&current)) {
-    Ok(t) => PathBuf::from(new).join(t),
+    Ok(t) => {
+      if hide {
+        PathBuf::from(new).join(format!("{}{}", ".", t.to_string_lossy()))
+      } else {
+        PathBuf::from(new).join(t)
+      }
+    }
     Err(_) => origin_path.to_path_buf(),
   }
 }
@@ -97,6 +104,7 @@ impl FileActions {
                   entry.path(),
                   &format!("{}/{}", dir, special_folder),
                   &self.settings.destination,
+                  false,
                 ),
                 to_file_entry(entry, -1),
               );
@@ -104,7 +112,12 @@ impl FileActions {
             }
 
             self.actions.insert(
-              change_root_dir(entry.path(), &dir, &self.settings.destination),
+              change_root_dir(
+                entry.path(),
+                &dir,
+                &self.settings.destination,
+                false,
+              ),
               to_file_entry(entry, 0),
             );
           }
@@ -132,6 +145,7 @@ impl FileActions {
               entry.path(),
               &path.to_str().unwrap_or("").to_owned(),
               &self.settings.destination,
+              false,
             ),
             to_file_entry(entry, 0),
           );
@@ -155,12 +169,13 @@ impl FileActions {
     for (key, value) in self.actions.clone() {
       if value.depth > 0 {
         new_actions.insert(
-          match key.strip_prefix(Path::new(&self.settings.destination)) {
-            Ok(t) => PathBuf::from(self.settings.destination.to_string())
-              .join(format!("{}{}", ".", t.to_string_lossy().to_string())),
-            Err(_) => key.to_path_buf(),
-          },
-          value
+          change_root_dir(
+            &key,
+            &self.settings.destination,
+            &self.settings.destination,
+            true,
+          ),
+          value,
         );
       } else {
         new_actions.insert(key, value);
@@ -347,7 +362,7 @@ mod tests {
   fn test_change_root_dir() {
     let path = Path::new("/test/file.txt");
     assert_eq!(
-      change_root_dir(path, &"/test".to_string(), &"/new".to_string())
+      change_root_dir(path, &"/test".to_string(), &"/new".to_string(), false)
         .to_string_lossy(),
       "/new/file.txt"
     );
@@ -355,9 +370,21 @@ mod tests {
     // should ignore if root is not in the current path
     let path2 = Path::new("/test/file.txt");
     assert_eq!(
-      change_root_dir(path2, &"/non-root".to_string(), &"/new".to_string())
-        .to_string_lossy(),
+      change_root_dir(
+        path2,
+        &"/non-root".to_string(),
+        &"/new".to_string(),
+        false
+      )
+      .to_string_lossy(),
       "/test/file.txt"
+    );
+
+    let path3 = Path::new("/test/file.txt");
+    assert_eq!(
+      change_root_dir(path3, &"/test".to_string(), &"/new".to_string(), true)
+        .to_string_lossy(),
+      "/new/.file.txt"
     );
   }
 
