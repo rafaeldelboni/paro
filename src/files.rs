@@ -5,7 +5,7 @@ use std::fs::FileType;
 use std::path::{Path, PathBuf};
 use walkdir::{DirEntry, WalkDir};
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct FileEntry {
   pub path: PathBuf,
   pub file_type: FileType,
