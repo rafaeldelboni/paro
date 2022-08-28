@@ -1,6 +1,7 @@
 use crate::settings::{remove_last_slash, Settings};
 use regex::RegexSet;
 use std::collections::BTreeMap;
+use std::ffi::OsStr;
 use std::fs::FileType;
 use std::path::{Path, PathBuf};
 use walkdir::{DirEntry, WalkDir};
@@ -30,12 +31,8 @@ fn change_root_dir(
   }
 }
 
-fn is_hidden(entry: &DirEntry) -> bool {
-  entry
-    .file_name()
-    .to_str()
-    .map(|s| s.starts_with('.'))
-    .unwrap_or(false)
+fn is_hidden(entry: &OsStr) -> bool {
+  entry.to_str().map(|s| s.starts_with('.')).unwrap_or(false)
 }
 
 fn in_special_folder(
@@ -89,7 +86,7 @@ impl FileActions {
         match entries.next() {
           None => break,
           Some(Ok(entry)) => {
-            if is_hidden(&entry) {
+            if is_hidden(&entry.file_name()) {
               if entry.file_type().is_dir() && entry.depth() > 0 {
                 entries.skip_current_dir();
               }
@@ -167,7 +164,9 @@ impl FileActions {
   pub fn hide_files(&mut self) {
     let mut new_actions = Actions::new();
     for (key, value) in self.actions.clone() {
-      if value.depth > 0 {
+      if value.depth > 0
+        && !is_hidden(&key.file_name().unwrap_or_else(|| key.as_os_str()))
+      {
         new_actions.insert(
           change_root_dir(
             &key,
@@ -343,6 +342,7 @@ mod tests {
 
     files.select_files();
     files.include_files();
+    files.hide_files();
 
     let str_dest_files: Vec<String> = to_str_dest_files(files);
 
@@ -351,9 +351,9 @@ mod tests {
       str_dest_files,
       vec![
         "/destiny/",
+        "/destiny/.file.txt",
         "/destiny/.ignored-file",
-        "/destiny/file.txt",
-        "/destiny/something.txt",
+        "/destiny/.something.txt",
       ]
     );
   }
@@ -393,8 +393,8 @@ mod tests {
     let mut files = WalkDir::new("tests/example-dotfiles/tag-um/")
       .sort_by_file_name()
       .into_iter();
-    assert_eq!(is_hidden(&files.next().unwrap().unwrap()), false);
-    assert_eq!(is_hidden(&files.next().unwrap().unwrap()), true);
+    assert_eq!(is_hidden(&files.next().unwrap().unwrap().file_name()), false);
+    assert_eq!(is_hidden(&files.next().unwrap().unwrap().file_name()), true);
   }
 
   #[test]
