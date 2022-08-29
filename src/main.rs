@@ -2,9 +2,11 @@ mod files;
 mod nix_helper;
 mod parsers;
 mod settings;
+mod terminal;
 
 use crate::{
   files::FileActions, parsers::clap::ClapParser, parsers::config::ConfigParser,
+  terminal::are_you_sure,
 };
 
 fn main() {
@@ -22,4 +24,6 @@ fn main() {
   for (key, value) in files.actions {
     println!("{:?} {:?} -> {:?}", value.depth, value.path, key);
   }
+
+  print!("{}", are_you_sure());
 }
