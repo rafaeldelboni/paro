@@ -28,16 +28,24 @@ fn main() {
   let (mut stdout, mut stdin) = build_stdio();
 
   for (key, value) in files.actions {
-    write!(
-      stdout,
-      "{:?} {:?} -> {:?}\r\n",
-      value.depth, value.path, key
-    )
-    .unwrap();
-    if is_same_file(&value.path, &key).unwrap() {
-      // TODO return ENUM of actions overwrite, keep, overwrite all, keep all
-      // TODO maybe add into action this type of action and mutate
-      let _sure = can_i_overwrite(&mut stdout, &mut stdin);
+    if value.path.is_dir() && !&key.exists() {
+      write!(stdout, "mkdir {:?}\r\n", key).unwrap();
+      continue;
     }
+
+    if is_same_file(&value.path, &key).unwrap() {
+      match can_i_overwrite(&mut stdout, &mut stdin, &key.to_string_lossy()) {
+        terminal::Inputs::Exit => {
+          break;
+        }
+        terminal::Inputs::No => {
+          write!(stdout, "keeping current {:?}\r\n", key).unwrap();
+          continue;
+        }
+        terminal::Inputs::Yes => (),
+      }
+    }
+
+    write!(stdout, "linking {:?} -> {:?}\r\n", value.path, key).unwrap();
   }
 }
