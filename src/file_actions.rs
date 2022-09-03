@@ -17,7 +17,7 @@ type Actions = BTreeMap<PathBuf, FileEntry>;
 
 #[derive(Clone, Debug)]
 pub struct FileActions {
-  settings: Settings,
+  pub settings: Settings,
   pub actions: Actions,
 }
 
@@ -161,12 +161,13 @@ impl FileActions {
     self.actions = new_actions
   }
 
-  pub fn build(&mut self) {
+  pub fn build(&mut self) -> Self {
     self.select_files();
     self.exclude_files();
     self.include_files();
     self.cleanup_special_folders();
     self.hide_files();
+    self.to_owned()
   }
 }
 

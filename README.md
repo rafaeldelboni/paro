@@ -38,7 +38,6 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
 - Extras Features
   - [x] Configuration to override the destination file path will be symlinked or copied (-n --destination)
   - [ ] Sync command (delete files that are set to be ignored) (-S --sync)
-  - [ ] Create an inclusion list for already doted files in your dotfiles directory to be included as symlink or copy (-I --include-dotted)
   - [ ] Split config files in two where you have configs and ignore files in different files
 - Maybe Features
   - [ ] Execute Hooks (Pre/Post)
