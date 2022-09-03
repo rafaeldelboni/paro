@@ -29,8 +29,6 @@ pub fn is_same_file(
   origin_file: &Path,
   destiny_file: &Path,
 ) -> Result<bool, std::io::Error> {
-  // TODO consider links and follow links to get metadata
-
   if !origin_file.exists() || !destiny_file.exists() {
     return Ok(false);
   }
@@ -62,8 +60,12 @@ pub fn create_symlink(origin_file: &Path, destiny_file: &Path) {
 }
 
 pub fn overwrite_symlink(origin_file: &Path, destiny_file: &Path) {
-  delete_file(&destiny_file);
-  create_symlink(&origin_file, &destiny_file);
+  if let Err(err) = fs::remove_file(destiny_file) {
+    if err.kind() != std::io::ErrorKind::NotFound {
+      print!("ERROR: {} {:?} {}\r\n", err, destiny_file, err.kind());
+    }
+  }
+  create_symlink(origin_file, destiny_file);
 }
 
 pub fn create_dir(destiny_file: &Path) {
@@ -102,6 +104,7 @@ mod tests {
 
   #[test]
   fn test_change_root_dir() {
+    // should change root
     let path = Path::new("/test/file.txt");
     assert_eq!(
       change_root_dir(path, &"/test".to_string(), &"/new".to_string(), false)
@@ -122,6 +125,7 @@ mod tests {
       "/test/file.txt"
     );
 
+    // should change root and set it as hidden
     let path3 = Path::new("/test/file.txt");
     assert_eq!(
       change_root_dir(path3, &"/test".to_string(), &"/new".to_string(), true)

@@ -21,53 +21,60 @@ impl fmt::Display for Inputs {
   }
 }
 
-pub fn build_stdio() -> (RawTerminal<Stdout>, Keys<AsyncReader>) {
-  (stdout().into_raw_mode().unwrap(), async_stdin().keys())
+pub struct Stdio {
+  pub stdout: RawTerminal<Stdout>,
+  pub stdin: Keys<AsyncReader>,
 }
 
-pub fn are_you_sure(
-  stdout: &mut RawTerminal<Stdout>,
-  stdin: &mut Keys<AsyncReader>,
-) -> Inputs {
-  let mut answer = Inputs::No;
-
-  loop {
-    let input = stdin.next();
-
-    if let Some(Ok(key)) = input {
-      match key {
-        termion::event::Key::Char('y') => {
-          answer = Inputs::Yes;
-          break;
-        }
-        termion::event::Key::Char('n') => {
-          answer = Inputs::No;
-          break;
-        }
-        termion::event::Key::Esc | termion::event::Key::Char('\n') => break,
-        termion::event::Key::Ctrl('d') | termion::event::Key::Ctrl('c') => {
-          answer = Inputs::Exit;
-          break;
-        }
-        _ => {
-          stdout.lock().flush().unwrap();
-          continue;
-        }
-      }
+impl Stdio {
+  pub fn new() -> Self {
+    Self {
+      stdout: stdout().into_raw_mode().unwrap(),
+      stdin: async_stdin().keys(),
     }
   }
 
-  answer
-}
+  pub fn writeln(&mut self, message: String) {
+    write!(self.stdout, "{}\r\n", message).unwrap();
+  }
 
-pub fn can_i_overwrite(
-  stdout: &mut RawTerminal<Stdout>,
-  stdin: &mut Keys<AsyncReader>,
-  thing: &str,
-) -> Inputs {
-  write!(stdout, "Overwrite? {} [y/N] ", thing).unwrap();
-  stdout.lock().flush().unwrap();
-  let sure = are_you_sure(stdout, stdin);
-  write!(stdout, "{}\r\n", &sure).unwrap();
-  sure
+  pub fn write(&mut self, message: String) {
+    write!(self.stdout, "{}", message).unwrap();
+  }
+
+  pub fn read_input(&mut self) -> Inputs {
+    let mut input = Inputs::No;
+    loop {
+      if let Some(Ok(key)) = self.stdin.next() {
+        match key {
+          termion::event::Key::Char('y') => {
+            input = Inputs::Yes;
+            break;
+          }
+          termion::event::Key::Char('n') => {
+            input = Inputs::No;
+            break;
+          }
+          termion::event::Key::Esc | termion::event::Key::Char('\n') => break,
+          termion::event::Key::Ctrl('d') | termion::event::Key::Ctrl('c') => {
+            input = Inputs::Exit;
+            break;
+          }
+          _ => {
+            self.stdout.lock().flush().unwrap();
+            continue;
+          }
+        }
+      }
+    }
+    input
+  }
+
+  pub fn dialog(&mut self, question: String) -> Inputs {
+    self.write(question + " [y/N] ");
+    self.stdout.lock().flush().unwrap();
+    let input = self.read_input();
+    self.writeln(format!("{}", &input));
+    input
+  }
 }
