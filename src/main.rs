@@ -7,7 +7,7 @@ mod settings;
 mod terminal;
 
 use crate::{
-  file_actions::FileActions, parsers::clap::ClapParser,
+  actions::Actions, file_actions::FileActions, parsers::clap::ClapParser,
   parsers::config::ConfigParser,
 };
 
@@ -17,5 +17,5 @@ fn main() {
   let clap = ClapParser::new().into_settings(vec![]);
   let settings = config.merge(clap).with_defaults();
   let files_actions: FileActions = FileActions::new(settings).build();
-  actions::execute(files_actions);
+  Actions::new(files_actions).execute();
 }
