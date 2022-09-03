@@ -24,9 +24,9 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
   - [x] Get action list and link/copy the files
   - [x] Dialog to ask to override existing files if already exists in your home directory but does not match the file in your dotfiles directory
   - [x] Option to always override (-f --force)
+  - [x] Add version command (-v --version)
   - [ ] Add drop/delete command, this deletes dotfiles managed by paro (-d --down)
   - [ ] Add dry-run command (-D --dry-run)
-  - [ ] Add version command (-v --version)
 - CI Pipeline to build releases
   - [ ] Linux (x86_64)
   - [ ] Linux (arm)
