@@ -21,9 +21,9 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
   - [x] Consider tags and tag folders and reorganize file list (-t --tag)
   - [x] Consider hosts and host folders and reorganize file list
   - [x] Make the top level files hidden in the destination file list
-  - [ ] Get action list and link/copy the files
-  - [ ] Dialog to ask to override existing files if already exists in your home directory but does not match the file in your dotfiles directory
-  - [ ] Option to always override (-f --force)
+  - [x] Get action list and link/copy the files
+  - [x] Dialog to ask to override existing files if already exists in your home directory but does not match the file in your dotfiles directory
+  - [x] Option to always override (-f --force)
   - [ ] Add drop/delete command, this deletes dotfiles managed by paro (-d --down)
   - [ ] Add dry-run command (-D --dry-run)
   - [ ] Add version command (-v --version)

@@ -101,7 +101,7 @@ mod tests {
   #[test]
   fn test_config_destination() {
     let settings = ConfigParser::new(&config_file()).into_settings();
-    assert_eq!(settings.destination, "/destination");
+    assert_eq!(settings.destination, "./tests/destination");
   }
 
   #[test]

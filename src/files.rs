@@ -1,5 +1,6 @@
 use std::ffi::OsStr;
-use std::os::unix::fs::MetadataExt;
+use std::fs;
+use std::os::unix::fs::{symlink, MetadataExt};
 use std::path::{Path, PathBuf};
 
 pub fn change_root_dir(
@@ -37,15 +38,38 @@ pub fn is_same_file(
   let m1 = origin_file.metadata()?;
   let m2 = destiny_file.metadata()?;
 
-  if m1.ino() != m2.ino() {
-    return Ok(false);
-  }
-
   if m1.dev() != m2.dev() {
     return Ok(false);
   }
 
+  if m1.ino() != m2.ino() {
+    return Ok(false);
+  }
+
   Ok(true)
+}
+
+pub fn delete_file(destiny_file: &Path) {
+  if let Err(err) = fs::remove_file(destiny_file) {
+    print!("ERROR: {} {:?}\r\n", err, destiny_file)
+  }
+}
+
+pub fn create_symlink(origin_file: &Path, destiny_file: &Path) {
+  if let Err(err) = symlink(origin_file, destiny_file) {
+    print!("ERROR: {} {:?}\r\n", err, destiny_file)
+  }
+}
+
+pub fn overwrite_symlink(origin_file: &Path, destiny_file: &Path) {
+  delete_file(&destiny_file);
+  create_symlink(&origin_file, &destiny_file);
+}
+
+pub fn create_dir(destiny_file: &Path) {
+  if let Err(err) = fs::create_dir_all(destiny_file) {
+    print!("ERROR: {} {:?}\r\n", err, destiny_file)
+  }
 }
 
 #[cfg(test)]

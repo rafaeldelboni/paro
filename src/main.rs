@@ -7,7 +7,7 @@ mod terminal;
 
 use crate::terminal::{build_stdio, can_i_overwrite};
 use crate::{
-  file_actions::FileActions, files::is_same_file, parsers::clap::ClapParser,
+  file_actions::FileActions, parsers::clap::ClapParser,
   parsers::config::ConfigParser,
 };
 use std::io::Write;
@@ -25,15 +25,26 @@ fn main() {
   println!("merged: {:?}", merged);
   println!("files:");
 
+  // TODO move this to another file
+  // TODO integration test
   let (mut stdout, mut stdin) = build_stdio();
 
   for (key, value) in files.actions {
-    if value.path.is_dir() && !&key.exists() {
-      write!(stdout, "mkdir {:?}\r\n", key).unwrap();
+    if value.path.is_dir() {
+      if !key.exists() {
+        write!(stdout, "mkdir {:?}\r\n", key).unwrap();
+        files::create_dir(&key);
+      }
       continue;
     }
 
-    if is_same_file(&value.path, &key).unwrap() {
+    if merged.force {
+      write!(stdout, "overwrite {:?} -> {:?}\r\n", value.path, key).unwrap();
+      files::overwrite_symlink(&value.path, &key);
+      continue;
+    }
+
+    if !files::is_same_file(&value.path, &key).unwrap() {
       match can_i_overwrite(&mut stdout, &mut stdin, &key.to_string_lossy()) {
         terminal::Inputs::Exit => {
           break;
@@ -42,10 +53,16 @@ fn main() {
           write!(stdout, "keeping current {:?}\r\n", key).unwrap();
           continue;
         }
-        terminal::Inputs::Yes => (),
+        terminal::Inputs::Yes => {
+          write!(stdout, "deleting existing {:?}\r\n", key).unwrap();
+          files::delete_file(&key);
+        }
       }
+    } else {
+      continue;
     }
 
     write!(stdout, "linking {:?} -> {:?}\r\n", value.path, key).unwrap();
+    files::create_symlink(&value.path, &key);
   }
 }
