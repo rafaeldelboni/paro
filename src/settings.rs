@@ -23,6 +23,7 @@ pub struct Settings {
   pub force: bool,
   pub down: bool,
   pub dry_run: bool,
+  pub verbose: u8,
 }
 
 impl Settings {
@@ -61,6 +62,7 @@ impl Settings {
       force: self.force,
       down: self.down,
       dry_run: self.dry_run,
+      verbose: self.verbose,
     }
   }
 
@@ -99,6 +101,7 @@ impl Settings {
       force: self.force || other.force,
       down: self.down || other.down,
       dry_run: self.dry_run || other.dry_run,
+      verbose: self.verbose | other.verbose,
     }
   }
 
@@ -130,6 +133,7 @@ impl Default for Settings {
       force: false,
       down: false,
       dry_run: false,
+      verbose: 0,
     }
   }
 }
@@ -154,6 +158,7 @@ mod tests {
       force: true,
       down: true,
       dry_run: true,
+      verbose: 2,
     };
 
     let settings_with_defaults = settings_1.clone().with_defaults();
@@ -166,6 +171,7 @@ mod tests {
     assert_eq!(settings_with_defaults.force, settings_1.force);
     assert_eq!(settings_with_defaults.down, settings_1.down);
     assert_eq!(settings_with_defaults.dry_run, settings_1.dry_run);
+    assert_eq!(settings_with_defaults.verbose, settings_1.verbose);
   }
 
   #[test]
@@ -181,6 +187,7 @@ mod tests {
       force: true,
       down: true,
       dry_run: true,
+      verbose: 2,
     };
     let settings_2 = Settings {
       tags: to_string_vec(vec!["t2", "t2"]),
@@ -192,6 +199,7 @@ mod tests {
       force: false,
       down: false,
       dry_run: false,
+      verbose: 0,
     };
 
     let merged_settings = settings_empty.merge(settings_1.clone());
@@ -204,6 +212,7 @@ mod tests {
     assert_eq!(merged_settings.force, settings_1.force);
     assert_eq!(merged_settings.down, settings_1.down);
     assert_eq!(merged_settings.dry_run, settings_1.dry_run);
+    assert_eq!(merged_settings.verbose, settings_1.verbose);
 
     let merged2_settings = settings_1.clone().merge(settings_2.clone());
     assert_eq!(
@@ -227,6 +236,7 @@ mod tests {
     assert_eq!(merged2_settings.force, settings_1.force);
     assert_eq!(merged2_settings.down, settings_1.down);
     assert_eq!(merged2_settings.dry_run, settings_1.dry_run);
+    assert_eq!(merged2_settings.verbose, settings_1.verbose);
   }
 
   #[test]

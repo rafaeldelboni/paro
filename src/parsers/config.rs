@@ -35,6 +35,8 @@ impl ConfigParser {
         .unwrap()
         .set_default("dry-run", false)
         .unwrap()
+        .set_default("verbose", 0)
+        .unwrap()
         .build()
         .unwrap(),
     }
@@ -66,6 +68,7 @@ mod tests {
     assert_eq!(settings.force, false);
     assert_eq!(settings.down, false);
     assert_eq!(settings.dry_run, false);
+    assert_eq!(settings.verbose, 0);
   }
 
   #[test]
@@ -120,5 +123,11 @@ mod tests {
   fn test_config_dry_run() {
     let settings = ConfigParser::new(&config_file()).into_settings();
     assert_eq!(settings.dry_run, true);
+  }
+
+  #[test]
+  fn test_config_verbose() {
+    let settings = ConfigParser::new(&config_file()).into_settings();
+    assert_eq!(settings.verbose, 2);
   }
 }

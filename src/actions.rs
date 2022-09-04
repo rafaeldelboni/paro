@@ -36,8 +36,9 @@ impl Actions {
   }
 
   fn log(&mut self, level: Log, message: String) {
-    // TODO replace 4 with verbosity settings in clap
-    if (level as u16 <= 4) || self.file_actions.settings.dry_run {
+    if (level as u8 <= self.file_actions.settings.verbose)
+      || self.file_actions.settings.dry_run
+    {
       self.stdio.writeln(message);
     }
   }
