@@ -21,12 +21,13 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
   - [x] Consider tags and tag folders and reorganize file list (-t --tag)
   - [x] Consider hosts and host folders and reorganize file list
   - [x] Make the top level files hidden in the destination file list
-  - [ ] Get action list and link/copy the files
-  - [ ] Dialog to ask to override existing files if already exists in your home directory but does not match the file in your dotfiles directory
-  - [ ] Option to always override (-f --force)
+  - [x] Get action list and link/copy the files
+  - [x] Dialog to ask to override existing files if already exists in your home directory but does not match the file in your dotfiles directory
+  - [x] Option to always override (-f --force)
+  - [x] Add version command (-V --version)
+  - [x] Add dry-run command (-D --dry-run)
+  - [ ] Add verbosity command (-v)
   - [ ] Add drop/delete command, this deletes dotfiles managed by paro (-d --down)
-  - [ ] Add dry-run command (-D --dry-run)
-  - [ ] Add version command (-v --version)
 - CI Pipeline to build releases
   - [ ] Linux (x86_64)
   - [ ] Linux (arm)
@@ -38,7 +39,6 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
 - Extras Features
   - [x] Configuration to override the destination file path will be symlinked or copied (-n --destination)
   - [ ] Sync command (delete files that are set to be ignored) (-S --sync)
-  - [ ] Create an inclusion list for already doted files in your dotfiles directory to be included as symlink or copy (-I --include-dotted)
   - [ ] Split config files in two where you have configs and ignore files in different files
 - Maybe Features
   - [ ] Execute Hooks (Pre/Post)

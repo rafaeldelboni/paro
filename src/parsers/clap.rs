@@ -23,7 +23,7 @@ fn to_string_unwrap(matches: &ArgMatches, id: &str) -> String {
 impl ClapParser {
   pub fn new() -> Self {
     let app = Command::new("paro")
-      .version("0.0.1")
+      .version(env!("CARGO_PKG_VERSION"))
       .about("Tool for managing dotfiles directories.")
       .after_help(
         "Note: `paro -h` prints a short and concise overview while \
