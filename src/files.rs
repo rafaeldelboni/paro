@@ -1,7 +1,22 @@
 use std::ffi::OsStr;
 use std::fs;
+use std::io::{self, Error, ErrorKind};
 use std::os::unix::fs::{symlink, MetadataExt};
 use std::path::{Path, PathBuf};
+
+pub fn canonicalize_path(entry: String) -> io::Result<String> {
+  if entry.is_empty() {
+    return Ok("".to_string());
+  }
+
+  match fs::canonicalize(&entry) {
+    Ok(result) => Ok(result.to_str().unwrap_or("").to_owned()),
+    Err(err) => Err(Error::new(
+      ErrorKind::InvalidData,
+      format!("Error {}: Invalid path {:?}.", err.kind(), entry),
+    )),
+  }
+}
 
 pub fn change_root_dir(
   origin_path: &Path,
@@ -47,6 +62,14 @@ pub fn is_same_file(
   Ok(true)
 }
 
+pub fn force_delete_file(destiny_file: &Path) {
+  if let Err(err) = fs::remove_file(destiny_file) {
+    if err.kind() != std::io::ErrorKind::NotFound {
+      print!("ERROR: {} {:?} {}\r\n", err, destiny_file, err.kind());
+    }
+  }
+}
+
 pub fn delete_file(destiny_file: &Path) {
   if let Err(err) = fs::remove_file(destiny_file) {
     print!("ERROR: {} {:?}\r\n", err, destiny_file)
@@ -54,17 +77,18 @@ pub fn delete_file(destiny_file: &Path) {
 }
 
 pub fn create_symlink(origin_file: &Path, destiny_file: &Path) {
-  if let Err(err) = symlink(origin_file, destiny_file) {
-    print!("ERROR: {} {:?}\r\n", err, destiny_file)
+  match fs::canonicalize(origin_file) {
+    Err(err) => print!("ERROR: {} {:?}\r\n", err, origin_file),
+    Ok(result) => {
+      if let Err(err) = symlink(result, destiny_file) {
+        print!("ERROR: {} {:?}\r\n", err, destiny_file)
+      }
+    }
   }
 }
 
 pub fn overwrite_symlink(origin_file: &Path, destiny_file: &Path) {
-  if let Err(err) = fs::remove_file(destiny_file) {
-    if err.kind() != std::io::ErrorKind::NotFound {
-      print!("ERROR: {} {:?} {}\r\n", err, destiny_file, err.kind());
-    }
-  }
+  force_delete_file(destiny_file);
   create_symlink(origin_file, destiny_file);
 }
 
@@ -77,6 +101,7 @@ pub fn create_dir(destiny_file: &Path) {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use regex::Regex;
   use walkdir::WalkDir;
 
   #[test]
@@ -144,5 +169,51 @@ mod tests {
       false
     );
     assert_eq!(is_hidden(&files.next().unwrap().unwrap().file_name()), true);
+  }
+
+  #[test]
+  fn test_validate_path() {
+    let re = Regex::new(r"tests$").unwrap();
+    assert!(
+      re.is_match(canonicalize_path("./tests".to_string()).unwrap().as_str())
+    );
+
+    assert_eq!("", canonicalize_path("".to_string()).unwrap());
+
+    assert_eq!(
+      "Error entity not found: Invalid path \"folda_name\".",
+      canonicalize_path("folda_name".to_string())
+        .unwrap_err()
+        .to_string()
+    );
+    assert_eq!(
+      "Error entity not found: Invalid path \"folda_name/\".",
+      canonicalize_path("folda_name/".to_string())
+        .unwrap_err()
+        .to_string()
+    );
+  }
+
+  #[test]
+  fn test_abspath() {
+    let re = Regex::new(r"tests$").unwrap();
+    assert!(
+      re.is_match(canonicalize_path("./tests".to_string()).unwrap().as_str())
+    );
+
+    assert_eq!("", canonicalize_path("".to_string()).unwrap());
+
+    assert_eq!(
+      "Error entity not found: Invalid path \"folda_name\".",
+      canonicalize_path("folda_name".to_string())
+        .unwrap_err()
+        .to_string()
+    );
+    assert_eq!(
+      "Error entity not found: Invalid path \"folda_name/\".",
+      canonicalize_path("folda_name/".to_string())
+        .unwrap_err()
+        .to_string()
+    );
   }
 }

@@ -27,7 +27,7 @@
 - [x] Add verbosity command (-v --verbose)
 - [x] Integration tests
 - [x] Documentation
-- [ ] Add drop/delete command, this deletes dotfiles managed by paro (-d --down)
+- [x] Add drop/delete command, this deletes dotfiles managed by paro (-d --down)
 - [ ] Instalation Script (Like rustup install)
 
 ### CI Pipeline to build releases

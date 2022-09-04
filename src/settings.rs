@@ -1,16 +1,6 @@
 use crate::nix_helper::{get_hostname, get_user_home};
 use serde::Deserialize;
 
-pub fn remove_last_slash(entry: String) -> String {
-  let mut chars = entry.chars();
-  if chars.clone().last().unwrap_or_default() == '/' {
-    chars.next_back();
-    chars.as_str().to_string()
-  } else {
-    entry
-  }
-}
-
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Settings {
@@ -237,12 +227,5 @@ mod tests {
     assert_eq!(merged2_settings.down, settings_1.down);
     assert_eq!(merged2_settings.dry_run, settings_1.dry_run);
     assert_eq!(merged2_settings.verbose, settings_1.verbose);
-  }
-
-  #[test]
-  fn test_remove_last_slash() {
-    assert_eq!("", remove_last_slash("".to_string()));
-    assert_eq!("folda_name", remove_last_slash("folda_name".to_string()));
-    assert_eq!("folda_name", remove_last_slash("folda_name/".to_string()));
   }
 }

@@ -1,4 +1,4 @@
-use crate::settings::Settings;
+use crate::{files::canonicalize_path, settings::Settings};
 use clap::{App, Arg, ArgAction, ArgMatches, Command};
 
 pub struct ClapParser {
@@ -170,7 +170,8 @@ impl ClapParser {
       excludes: to_vec_string(&matches, "excludes"),
       includes: to_vec_string(&matches, "includes"),
       directories: to_vec_string(&matches, "directories"),
-      destination: to_string_unwrap(&matches, "destination"),
+      destination: canonicalize_path(to_string_unwrap(&matches, "destination"))
+        .unwrap(),
       hostname: to_string_unwrap(&matches, "hostname"),
       force: matches.get_one::<bool>("force").copied().unwrap(),
       down: matches.get_one::<bool>("down").copied().unwrap(),
@@ -182,6 +183,8 @@ impl ClapParser {
 
 #[cfg(test)]
 mod tests {
+  use regex::Regex;
+
   use super::*;
 
   #[test]
@@ -282,14 +285,11 @@ mod tests {
 
   #[test]
   fn test_clap_destination() {
-    let settings = ClapParser::new().into_settings(vec![
-      "paro",
-      "-n",
-      "/new/home",
-      "-n",
-      "/new/home2",
-    ]);
-    assert_eq!(settings.destination, "/new/home2");
+    let settings =
+      ClapParser::new().into_settings(vec!["paro", "-n", "src", "-n", "tests"]);
+
+    let re = Regex::new(r"tests$").unwrap();
+    assert!(re.is_match(settings.destination.as_str()));
   }
 
   #[test]

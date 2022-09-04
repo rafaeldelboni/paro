@@ -1,4 +1,4 @@
-use crate::settings::Settings;
+use crate::{files::canonicalize_path, settings::Settings};
 use config::{Config, File, FileFormat};
 
 pub struct ConfigParser {
@@ -43,13 +43,19 @@ impl ConfigParser {
   }
 
   pub fn into_settings(self) -> Settings {
-    self.config.try_deserialize().unwrap()
+    let settings: Settings = self.config.try_deserialize().unwrap();
+    Settings {
+      destination: canonicalize_path(settings.destination).unwrap(),
+      ..settings
+    }
   }
 }
 
 #[cfg(test)]
 mod tests {
-  use super::*;
+  use regex::Regex;
+
+use super::*;
 
   fn config_file() -> Vec<String> {
     vec!["tests/settings".to_string()]
@@ -104,7 +110,9 @@ mod tests {
   #[test]
   fn test_config_destination() {
     let settings = ConfigParser::new(&config_file()).into_settings();
-    assert_eq!(settings.destination, "./tests/destination");
+
+    let re = Regex::new(r"/tests$").unwrap();
+    assert!(re.is_match(settings.destination.as_str()));
   }
 
   #[test]
