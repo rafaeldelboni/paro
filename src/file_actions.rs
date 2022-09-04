@@ -96,7 +96,7 @@ impl FileActions {
               to_file_entry(entry, 0),
             );
           }
-          Some(Err(err)) => println!("ERROR: {}", err),
+          Some(Err(err)) => print!("ERROR: {}\r\n", err),
         };
       }
     }
@@ -125,7 +125,7 @@ impl FileActions {
             to_file_entry(entry, 0),
           );
         }
-        Err(err) => println!("ERROR: {}", err),
+        Err(err) => print!("ERROR: {}\r\n", err),
       });
     }
   }
@@ -197,7 +197,7 @@ mod tests {
 
     let str_dest_files: Vec<String> = to_str_dest_files(files);
 
-    assert_eq!(str_dest_files.len(), 12);
+    assert_eq!(str_dest_files.len(), 14);
     assert_eq!(
       str_dest_files,
       vec![
@@ -211,8 +211,10 @@ mod tests {
         "/destiny/normal-file.txt",
         "/destiny/tag-dois",
         "/destiny/tag-dois/file.txt",
+        "/destiny/tag-dois/file2.txt",
         "/destiny/tag-um",
         "/destiny/tag-um/file.txt",
+        "/destiny/tag-um/file1.txt",
       ]
     );
   }
@@ -229,7 +231,7 @@ mod tests {
 
     let str_dest_files: Vec<String> = to_str_dest_files(files);
 
-    assert_eq!(str_dest_files.len(), 12);
+    assert_eq!(str_dest_files.len(), 14);
     assert_eq!(
       str_dest_files,
       vec![
@@ -243,8 +245,10 @@ mod tests {
         "/destiny/.normal-file.txt",
         "/destiny/.tag-dois",
         "/destiny/.tag-dois/file.txt",
+        "/destiny/.tag-dois/file2.txt",
         "/destiny/.tag-um",
         "/destiny/.tag-um/file.txt",
+        "/destiny/.tag-um/file1.txt"
       ]
     );
   }
@@ -271,12 +275,13 @@ mod tests {
       .collect();
     str_dest_files.sort();
 
-    assert_eq!(str_dest_files.len(), 5);
+    assert_eq!(str_dest_files.len(), 6);
     assert_eq!(
       str_dest_files,
       vec![
         "/destiny/:0",
         "/destiny/file.txt:1",
+        "/destiny/file1.txt:1",
         "/destiny/folder/something.txt:2",
         "/destiny/folder:1",
         "/destiny/normal-file.txt:1",
@@ -294,6 +299,7 @@ mod tests {
     settings.excludes = vec![
       "tests/example-dotfiles/folder*".to_string(),
       "tests/example-dotfiles/tag-um/.file.txt".to_string(),
+      "tests/example-dotfiles/tag-um/.file1.txt".to_string(),
     ];
     settings.destination = "/destiny".to_string();
     let mut files: FileActions = FileActions::new(settings);
@@ -303,8 +309,11 @@ mod tests {
 
     let str_dest_files: Vec<String> = to_str_dest_files(files);
 
-    assert_eq!(str_dest_files.len(), 2);
-    assert_eq!(str_dest_files, vec!["/destiny/", "/destiny/file.txt",]);
+    assert_eq!(str_dest_files.len(), 3);
+    assert_eq!(
+      str_dest_files,
+      vec!["/destiny/", "/destiny/file.txt", "/destiny/file1.txt"]
+    );
   }
 
   #[test]
@@ -325,12 +334,13 @@ mod tests {
 
     let str_dest_files: Vec<String> = to_str_dest_files(files);
 
-    assert_eq!(str_dest_files.len(), 4);
+    assert_eq!(str_dest_files.len(), 5);
     assert_eq!(
       str_dest_files,
       vec![
         "/destiny/",
         "/destiny/.file.txt",
+        "/destiny/.file1.txt",
         "/destiny/.ignored-file",
         "/destiny/.something.txt",
       ]

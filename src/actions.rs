@@ -27,7 +27,6 @@ impl fmt::Display for Log {
   }
 }
 
-// TODO integration test
 impl Actions {
   pub fn new(file_actions: FileActions) -> Self {
     Self {
@@ -113,10 +112,35 @@ impl Actions {
 
 #[cfg(test)]
 mod tests {
-  //use super::*;
+  use super::*;
+  use crate::{files, parsers::clap::ClapParser};
+  use std::{fs, path::PathBuf};
   use walkdir::WalkDir;
 
-  fn _to_str_dest_files(files: walkdir::IntoIter) -> Vec<String> {
+  fn test_dir() -> PathBuf {
+    PathBuf::from("tests/destination")
+  }
+
+  fn list_test_dir() -> Vec<String> {
+    let files = WalkDir::new(test_dir()).sort_by_file_name().into_iter();
+    to_str_dest_files(files)
+  }
+
+  fn delete_test_dir() {
+    if let Err(err) = fs::remove_dir_all(test_dir().as_path()) {
+      print!("ERROR: {} {:?}\r\n", err, test_dir().as_path())
+    }
+  }
+
+  fn prepare(args: Vec<&str>) {
+    delete_test_dir();
+    files::create_dir(test_dir().as_path());
+    let settings = ClapParser::new().into_settings(args);
+    let files_actions: FileActions = FileActions::new(settings).build();
+    Actions::new(files_actions).execute();
+  }
+
+  fn to_str_dest_files(files: walkdir::IntoIter) -> Vec<String> {
     let mut str_dest_files: Vec<String> = files
       .map(|v| v.unwrap().path().to_string_lossy().to_string())
       .collect::<Vec<String>>();
@@ -125,11 +149,146 @@ mod tests {
   }
 
   #[test]
-  fn test_to_file_entry() {
-    let _files = WalkDir::new("tests/destination")
-      .sort_by_file_name()
-      .into_iter();
+  fn integration_test() {
+    // test with no args should create any file
+    prepare(vec!["paro"]);
+    assert_eq!(list_test_dir(), vec!["tests/destination"]);
 
-    //assert_eq!(to_str_dest_files(files), vec![""],);
+    // basic redirection args should create some files
+    prepare(vec![
+      "paro",
+      "-a",
+      "tests/example-dotfiles",
+      "-n",
+      "tests/destination",
+    ]);
+    assert_eq!(
+      list_test_dir(),
+      vec![
+        "tests/destination",
+        "tests/destination/.folder",
+        "tests/destination/.folder/something.txt",
+        "tests/destination/.normal-file.txt",
+      ]
+    );
+
+    // adds ignored file
+    prepare(vec![
+      "paro",
+      "-a",
+      "tests/example-dotfiles",
+      "-n",
+      "tests/destination",
+      "-i",
+      "tests/example-dotfiles/.ignored-file",
+    ]);
+    assert_eq!(
+      list_test_dir(),
+      vec![
+        "tests/destination",
+        "tests/destination/.folder",
+        "tests/destination/.folder/something.txt",
+        "tests/destination/.ignored-file",
+        "tests/destination/.normal-file.txt",
+      ]
+    );
+
+    // removes file
+    prepare(vec![
+      "paro",
+      "-a",
+      "tests/example-dotfiles",
+      "-n",
+      "tests/destination",
+      "-x",
+      "tests/example-dotfiles/normal-file.txt",
+    ]);
+    assert_eq!(
+      list_test_dir(),
+      vec![
+        "tests/destination",
+        "tests/destination/.folder",
+        "tests/destination/.folder/something.txt",
+      ]
+    );
+
+    // using hostname
+    prepare(vec![
+      "paro",
+      "-a",
+      "tests/example-dotfiles",
+      "-n",
+      "tests/destination",
+      "-B",
+      "dois",
+    ]);
+    assert_eq!(
+      list_test_dir(),
+      vec![
+        "tests/destination",
+        "tests/destination/.file.txt",
+        "tests/destination/.folder",
+        "tests/destination/.folder/something.txt",
+        "tests/destination/.normal-file.txt"
+      ]
+    );
+
+    // using hostname
+    prepare(vec![
+      "paro",
+      "-a",
+      "tests/example-dotfiles",
+      "-n",
+      "tests/destination",
+      "-B",
+      "dois",
+    ]);
+    assert_eq!(
+      list_test_dir(),
+      vec![
+        "tests/destination",
+        "tests/destination/.file.txt",
+        "tests/destination/.folder",
+        "tests/destination/.folder/something.txt",
+        "tests/destination/.normal-file.txt"
+      ]
+    );
+
+    // using tag
+    prepare(vec![
+      "paro",
+      "-a",
+      "tests/example-dotfiles",
+      "-n",
+      "tests/destination",
+      "-t",
+      "um",
+    ]);
+    assert_eq!(
+      list_test_dir(),
+      vec![
+        "tests/destination",
+        "tests/destination/.file.txt",
+        "tests/destination/.file1.txt",
+        "tests/destination/.folder",
+        "tests/destination/.folder/something.txt",
+        "tests/destination/.normal-file.txt"
+      ]
+    );
+
+    // using dry_run
+    prepare(vec![
+      "paro",
+      "-a",
+      "tests/example-dotfiles",
+      "-n",
+      "tests/destination",
+      "-t",
+      "um",
+      "--dry-run",
+    ]);
+    assert_eq!(list_test_dir(), vec!["tests/destination"]);
+
+    delete_test_dir()
   }
 }
