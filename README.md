@@ -58,8 +58,13 @@ patterns.
 > Note: `paro -h` prints a short and concise overview while `paro --help` gives all details.
 
 ## Configuration File
-You can set any of the options above in the configuration check [`tests/settings.tml`](tests/settings.tml) for a full example.  
-Paro will search for the config file in the following locations: `~/.parorc`, `~/.config/paro/parorc`, `~/.dotfiles/parorc` and `~/.dotfiles/config/paro/parorc`
+You can set any of the options above in the configuration using [TOML](https://github.com/toml-lang/toml) file format, check [`tests/settings.tml`](tests/settings.tml) for a full example. 
+
+Paro will search for the config file in the following locations: 
+- `~/.parorc` 
+- `~/.config/paro/parorc`
+- `~/.dotfiles/parorc`
+- `~/.dotfiles/config/paro/parorc`
 
 ### Sample
 ```toml
