@@ -57,11 +57,11 @@ patterns.
 
 > Note: `paro -h` prints a short and concise overview while `paro --help` gives all details.
 
-### Configuration file
+## Configuration File
 You can set any of the options above in the configuration check [tests/settings.tml](tests/settings.tml) for a full example.
 Paro will search for the config file in the following locations: `~/.parorc`, `~/.config/paro/parorc`, `~/.dotfiles/parorc` and `~/.dotfiles/config/paro/parorc`
 
-Sample:
+## Sample
 ```toml
 tags=["linux"]
 excludes=["file.txt", "file2.txt"]
@@ -71,14 +71,15 @@ destination="/home/user-name/"
 hostname="override-my-computer-name"
 ```
 
-### Defaults
+# Defaults
 By default Paro defines these settings, that you can override with options above:
-- directories: ~/.dotfiles
-- destination: ~/
-- hostname: Unix Hostname (libc::gethostname)
+- directories: `~/.dotfiles`
+- destination: `~/`
+- hostname: `Unix Hostname (libc::gethostname)`
 
 ## Progress
-Paro currently has all the features I use from rcm, but is in the plans to add more existing and new features. [TODOs](TODO.md)
+Paro currently has all the features I use from rcm, but is in the plans to add more existing and new features.  
+[TODOs](TODO.md)
 
 ## Contributing
 If you find any dead links, misinformation or any improvements in this software at all [Emails](https://github.com/rafaeldelboni), [PRs](https://github.com/rafaeldelboni/paro/pulls) and [Issues](https://github.com/rafaeldelboni/paro/issues) are highly encouraged.
