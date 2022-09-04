@@ -7,3 +7,4 @@ hostname="hostname-in-config"
 force=true
 down=true
 dry-run=true
+verbose=2

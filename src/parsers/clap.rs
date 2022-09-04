@@ -143,6 +143,17 @@ impl ClapParser {
              A simulated or practice performance; rehearsal.",
           )
           .action(ArgAction::SetTrue),
+      )
+      .arg(
+        Arg::new("verbose")
+          .short('v')
+          .long("verbose")
+          .help("Make the operation more talkative")
+          .long_help(
+            "Make the operation more talkative. \
+            This can be repeated for more verbosity.",
+          )
+          .action(ArgAction::Count),
       );
 
     Self { clap: app }
@@ -164,6 +175,7 @@ impl ClapParser {
       force: matches.get_one::<bool>("force").copied().unwrap(),
       down: matches.get_one::<bool>("down").copied().unwrap(),
       dry_run: matches.get_one::<bool>("dry-run").copied().unwrap(),
+      verbose: matches.get_one::<u8>("verbose").copied().unwrap(),
     }
   }
 }
@@ -210,6 +222,7 @@ mod tests {
     assert_eq!(settings.force, false);
     assert_eq!(settings.down, false);
     assert_eq!(settings.dry_run, false);
+    assert_eq!(settings.verbose, 0);
   }
 
   #[test]
@@ -277,5 +290,14 @@ mod tests {
       "/new/home2",
     ]);
     assert_eq!(settings.destination, "/new/home2");
+  }
+
+  #[test]
+  fn test_clap_verbose() {
+    let settings = ClapParser::new().into_settings(vec![
+      "paro",
+      "-vv",
+    ]);
+    assert_eq!(settings.verbose, 2);
   }
 }

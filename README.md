@@ -26,7 +26,7 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
   - [x] Option to always override (-f --force)
   - [x] Add version command (-V --version)
   - [x] Add dry-run command (-D --dry-run)
-  - [ ] Add verbosity command (-v)
+  - [x] Add verbosity command (-v)
   - [ ] Add drop/delete command, this deletes dotfiles managed by paro (-d --down)
 - CI Pipeline to build releases
   - [ ] Linux (x86_64)
