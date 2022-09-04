@@ -183,9 +183,8 @@ impl ClapParser {
 
 #[cfg(test)]
 mod tests {
-  use regex::Regex;
-
   use super::*;
+  use regex::Regex;
 
   #[test]
   fn test_to_vec_string() {

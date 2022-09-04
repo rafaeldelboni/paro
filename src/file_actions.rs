@@ -88,7 +88,7 @@ impl FileActions {
             self.actions.insert(
               files::change_root_dir(
                 entry.path(),
-                &dir,
+                dir,
                 &self.settings.destination,
                 false,
               ),

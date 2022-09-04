@@ -53,9 +53,8 @@ impl ConfigParser {
 
 #[cfg(test)]
 mod tests {
+  use super::*;
   use regex::Regex;
-
-use super::*;
 
   fn config_file() -> Vec<String> {
     vec!["tests/settings".to_string()]
