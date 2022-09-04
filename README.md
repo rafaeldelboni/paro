@@ -26,7 +26,7 @@ Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot
   - [x] Option to always override (-f --force)
   - [x] Add version command (-V --version)
   - [x] Add dry-run command (-D --dry-run)
-  - [x] Add verbosity command (-v)
+  - [x] Add verbosity command (-v --verbose)
   - [ ] Add drop/delete command, this deletes dotfiles managed by paro (-d --down)
 - CI Pipeline to build releases
   - [ ] Linux (x86_64)
@@ -89,6 +89,9 @@ user home directory.
 Do not install files that match <file-pattern>. Tagged files go in a directory named for
 the tag, prefixed with tag-. Therefore, files under .dotfiles/tag-git are only installed
 when installing using the git tag. This can be repeated with additional patterns.
+
+#### -v, --verbose
+Make the operation more talkative. This can be repeated for more verbosity.
 
 #### -V, --version
 Print version information
