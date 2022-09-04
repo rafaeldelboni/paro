@@ -294,10 +294,7 @@ mod tests {
 
   #[test]
   fn test_clap_verbose() {
-    let settings = ClapParser::new().into_settings(vec![
-      "paro",
-      "-vv",
-    ]);
+    let settings = ClapParser::new().into_settings(vec!["paro", "-vv"]);
     assert_eq!(settings.verbose, 2);
   }
 }
