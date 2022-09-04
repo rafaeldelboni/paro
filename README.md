@@ -76,11 +76,48 @@ destination="/home/user-name/"
 hostname="override-my-computer-name"
 ```
 
-## Defaults
+### Defaults
 By default Paro defines these settings, that you can override with options above:
 - directories: `~/.dotfiles`
 - destination: `~/`
 - hostname: `Unix Hostname (libc::gethostname)`
+
+## Installation
+Currently there is only one way to install paro.
+
+If you're a **Rust programmer**, paro can be installed with `cargo`.
+```
+git clone https://github.com/rafaeldelboni/paro
+cd paro
+cargo install --path .
+```
+
+## Building
+
+paro is written in Rust, so you'll need to grab a
+[Rust installation](https://www.rust-lang.org/) in order to compile it.
+paro compiles with Rust stable or newer. In general, paro tracks
+the latest stable release of the Rust compiler.
+
+To build paro:
+
+```bash
+git clone https://github.com/rafaeldelboni/paro
+cd paro
+cargo build --release
+./target/release/paro --version
+0.0.1
+```
+### Running tests
+
+paro is relatively well-tested, including both unit tests and integration
+tests. To run the full test suite, use:
+
+```
+$ cargo test --all
+```
+
+from the repository root.
 
 ## Progress
 Paro currently has all the features I use from rcm, but is in the plans to add more existing and new features.  
