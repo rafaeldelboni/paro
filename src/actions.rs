@@ -36,9 +36,11 @@ impl Actions {
     }
   }
 
-  // TODO consider level and verbosity and dry-run
-  fn log(&mut self, _level: Log, message: String) {
-    self.stdio.writeln(message);
+  fn log(&mut self, level: Log, message: String) {
+    // TODO replace 4 with verbosity settings in clap
+    if (level as u16 <= 4) || self.file_actions.settings.dry_run {
+      self.stdio.writeln(message);
+    }
   }
 
   fn trace(&mut self, message: String) {
@@ -54,13 +56,14 @@ impl Actions {
     self.log(Log::Warning, message);
   }
 
-  // TODO consider dry-run
-  fn run<F: FnOnce()>(&mut self, cb: F) {
-    cb();
+  fn run<F: FnOnce()>(&mut self, callback: F) {
+    if !self.file_actions.settings.dry_run {
+      callback();
+    }
   }
 
   pub fn execute(&mut self) {
-    self.trace(format!("settings: {:?}", self.file_actions.settings));
+    self.trace(format!("{:?}", self.file_actions.settings));
 
     for (key, value) in self.file_actions.actions.clone() {
       if files::is_same_file(&value.path, &key).unwrap() {
@@ -105,5 +108,28 @@ impl Actions {
       self.info(format!("linking {:?} -> {:?}", value.path, key));
       self.run(|| files::create_symlink(&value.path, &key));
     }
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  //use super::*;
+  use walkdir::WalkDir;
+
+  fn _to_str_dest_files(files: walkdir::IntoIter) -> Vec<String> {
+    let mut str_dest_files: Vec<String> = files
+      .map(|v| v.unwrap().path().to_string_lossy().to_string())
+      .collect::<Vec<String>>();
+    str_dest_files.sort();
+    str_dest_files
+  }
+
+  #[test]
+  fn test_to_file_entry() {
+    let _files = WalkDir::new("tests/destination")
+      .sort_by_file_name()
+      .into_iter();
+
+    //assert_eq!(to_str_dest_files(files), vec![""],);
   }
 }
