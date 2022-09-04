@@ -3,7 +3,23 @@
 [package]
 name = "paro"
 version = "0.0.0"
+authors = ["Rafael Delboni <rafadelboni@gmail.com>"]
+description = """
+Tool for managing dotfiles directories; Heavily based on rcm.  
+paro has first class support on macOS and Linux
+"""
+documentation = "https://github.com/rafaeldelboni/paro"
+homepage = "https://github.com/rafaeldelboni/paro"
+repository = "https://github.com/rafaeldelboni/paro"
+keywords = ["dotfiles", "management", "symlink", "rcm", "stow"]
+categories = ["command-line-utilities", "dotfile-management"]
+license = "Unlicense"
 edition = "2021"
+
+[[bin]]
+bench = false
+path = "src/main.rs"
+name = "paro"
 
 [dependencies]
 clap = { version = "3.2.16", features = ["derive"] }

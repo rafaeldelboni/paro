@@ -1,5 +1,5 @@
 use crate::files;
-use crate::settings::{remove_last_slash, Settings};
+use crate::settings::Settings;
 use regex::RegexSet;
 use std::collections::BTreeMap;
 use std::fs::FileType;
@@ -57,8 +57,7 @@ impl FileActions {
     let special_folders = &self.settings.special_folder_vec();
     let set = RegexSet::new(special_folders).unwrap();
 
-    for directory in &self.settings.directories {
-      let dir = remove_last_slash(directory.to_owned());
+    for dir in &self.settings.directories {
       let mut entries = WalkDir::new(&dir).into_iter();
       loop {
         match entries.next() {
@@ -89,7 +88,7 @@ impl FileActions {
             self.actions.insert(
               files::change_root_dir(
                 entry.path(),
-                &dir,
+                dir,
                 &self.settings.destination,
                 false,
               ),
@@ -131,7 +130,7 @@ impl FileActions {
   }
 
   pub fn cleanup_special_folders(&mut self) {
-    let dir = remove_last_slash(self.settings.destination.clone());
+    let dir = self.settings.destination.clone();
     let set =
       RegexSet::new(vec![dir.clone() + "/tag-", dir + "/host-"]).unwrap();
     self
@@ -257,7 +256,7 @@ mod tests {
   fn test_select_files_with_tag_host() {
     let mut settings = Settings::default();
     settings.directories = vec!["tests/example-dotfiles/".to_string()];
-    settings.destination = "/destiny/".to_string();
+    settings.destination = "/destiny".to_string();
     settings.tags = vec!["um".to_string()];
     settings.hostname = "dois".to_string();
     let mut files: FileActions = FileActions::new(settings);

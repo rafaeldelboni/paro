@@ -1,7 +1,8 @@
 # Paro
 > paro : _to prepare, get ready / set, put / furnish, supply._  
 
-Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot.github.io/rcm).
+Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot.github.io/rcm).  
+paro has first class support on macOS and Linux
 
 ## CLI Usage
 `paro [OPTIONS]`
@@ -60,7 +61,7 @@ patterns.
 ## Configuration File
 You can set any of the options above in the configuration using [TOML](https://github.com/toml-lang/toml) file format, check [`tests/settings.tml`](tests/settings.tml) for a full example. 
 
-Paro will search for the config file in the following locations: 
+paro will search for the config file in the following locations: 
 - `~/.parorc` 
 - `~/.config/paro/parorc`
 - `~/.dotfiles/parorc`
@@ -77,7 +78,7 @@ hostname="override-my-computer-name"
 ```
 
 ### Defaults
-By default Paro defines these settings, that you can override with options above:
+By default paro defines these settings, that you can override with options above:
 - directories: `~/.dotfiles`
 - destination: `~/`
 - hostname: `Unix Hostname (libc::gethostname)`
@@ -120,7 +121,7 @@ $ cargo test --all
 from the repository root.
 
 ## Progress
-Paro currently has all the features I use from rcm, but is in the plans to add more existing and new features.  
+paro currently has all the features I use from rcm, but is in the plans to add more existing and new features.  
 You can check the progress list: [`TODO.md`](TODO.md)
 
 ## Contributing
