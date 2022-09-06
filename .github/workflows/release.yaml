@@ -1,9 +1,6 @@
 name: Release Build
 on:
   push:
-    # Enable when testing release infrastructure on a branch.
-    branches:
-    - ci/test
     tags:
     - "[0-9]+.[0-9]+.[0-9]+"
 
@@ -37,8 +34,6 @@ jobs:
       - name: Get latest tag
         id: latest-tag
         uses: WyriHaximus/github-action-get-previous-tag@v1
-        with:
-          fallback: 0.0.1 # Optional fallback tag to use when no tag can be found
 
       - name: Install Rust toolchain
         run: |
@@ -76,10 +71,10 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
 
-      #- name: Release to GiHub
-        #uses: softprops/action-gh-release@v1
-        #with:
-          #files: "*.zip"
-          #draft: true
-        #env:
-          #GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Release to GiHub
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*.zip"
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
