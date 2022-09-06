@@ -31,10 +31,10 @@
 - [ ] Instalation Script (Like rustup install)
 
 ### CI Pipeline to build releases
-- [ ] Linux (x86_64)
-- [ ] Linux (arm)
-- [ ] Macos (x86_64)
-- [ ] Macos (arm)
+- [x] Linux (x86_64)
+- [x] Linux (arm)
+- [x] Macos (x86_64)
+- [x] Macos (arm)
 
 ## Extras Features
 - [x] Configuration to override the destination file path will be symlinked or copied (-n --destination)
