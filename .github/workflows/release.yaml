@@ -1,0 +1,75 @@
+name: release
+on:
+  push:
+    # Enable when testing release infrastructure on a branch.
+    branches:
+    - ci/test
+    tags:
+    - "[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  dist:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            target: x86_64-unknown-linux-gnu
+            code-target: linux-x64
+          - os: ubuntu-20.04
+            target: aarch64-unknown-linux-gnu
+            code-target: linux-arm64
+          - os: ubuntu-20.04
+            target: arm-unknown-linux-gnueabihf
+            code-target: linux-armhf
+          - os: macos-11
+            target: x86_64-apple-darwin
+            code-target: darwin-x64
+          - os: macos-11
+            target: aarch64-apple-darwin
+            code-target: darwin-arm64
+
+    name: dist (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+
+    env:
+      RA_TARGET: ${{ matrix.target }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: ${{ env.FETCH_DEPTH }}
+
+      - name: Get latest tag
+        id: latest-tag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+
+      - name: Install Rust toolchain
+        run: |
+          rustup update --no-self-update stable
+          rustup target add ${{ matrix.target }}
+          rustup component add rust-src
+
+      - name: Update apt repositories
+        if: matrix.target == 'aarch64-unknown-linux-gnu' || matrix.target == 'arm-unknown-linux-gnueabihf'
+        run: sudo apt-get update
+
+      - name: Install AArch64 target toolchain
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: sudo apt-get install gcc-aarch64-linux-gnu
+
+      - name: Install ARM target toolchain
+        if: matrix.target == 'arm-unknown-linux-gnueabihf'
+        run: sudo apt-get install gcc-arm-linux-gnueabihf
+
+      - name: Set version
+        run: sed -i -e 's/^version = .*/version = "${{ steps.latest-tag.outputs.tag }}"/' Cargo.toml
+
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: dist-${{ matrix.target }}
+          path: ./target/release/paro
