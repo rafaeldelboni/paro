@@ -8,7 +8,7 @@ on:
     - "[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
-  dist:
+  build:
     strategy:
       matrix:
         include:
@@ -58,18 +58,28 @@ jobs:
       - name: Cross Build
         run: cross build --release --target=${{ matrix.target }}
 
-      #- name: Build
-        #run: cargo build --release --target ${{ matrix.target }}
-
-      - name: DEBUG
-        run: |
-          ls -lah ./
-          ls -lah ./target/
-          ls -lah ./target/${{ matrix.target }}
-          ls -lah ./target/${{ matrix.target }}/release
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v1
         with:
-          name: dist-${{ matrix.target }}
+          name: paro-${{ steps.latest-tag.outputs.tag }}-${{ matrix.target }}
           path: ./target/${{ matrix.target }}/release/paro
+
+  release:
+    runs-on: ubuntu-latest
+    name: Download artifacts
+    needs: [build]
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      #- name: Release to GiHub
+        #uses: softprops/action-gh-release@v1
+        #with:
+          #files: "*.zip"
+          #draft: true
+        #env:
+          #GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
