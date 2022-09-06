@@ -63,8 +63,15 @@ jobs:
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
 
+      - name: DEBUG
+        run: |
+          ls -lah ./
+          ls -lah ./target/
+          ls -lah ./target/${{ matrix.target }}
+          ls -lah ./target/${{ matrix.target }}/release
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v1
         with:
           name: dist-${{ matrix.target }}
-          path: ./target/release/paro
+          path: ./target/${{ matrix.target }}/release/paro
