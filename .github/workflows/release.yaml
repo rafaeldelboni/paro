@@ -1,4 +1,4 @@
-name: release
+name: Release Build
 on:
   push:
     # Enable when testing release infrastructure on a branch.
@@ -25,11 +25,8 @@ jobs:
             target: aarch64-apple-darwin
             code-target: darwin-arm64
 
-    name: dist (${{ matrix.target }})
+    name: Build (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
-
-    env:
-      RA_TARGET: ${{ matrix.target }}
 
     steps:
       - name: Checkout repository
@@ -59,19 +56,22 @@ jobs:
         run: cross build --release --target=${{ matrix.target }}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: paro-${{ steps.latest-tag.outputs.tag }}-${{ matrix.target }}
           path: ./target/${{ matrix.target }}/release/paro
 
   release:
+    name: Release artifacts
     runs-on: ubuntu-latest
-    name: Download artifacts
     needs: [build]
 
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
+
+      - name: Zips artifacts
+        run: for i in */; do zip -r "${i%/}.zip" "$i"; done
 
       - name: Display structure of downloaded files
         run: ls -R
