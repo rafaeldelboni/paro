@@ -28,7 +28,7 @@
 - [x] Integration tests
 - [x] Documentation
 - [x] Add drop/delete command, this deletes dotfiles managed by paro (-d --down)
-- [ ] Instalation Script (Like rustup install)
+- [x] Instalation Script (Like rustup install)
 
 ### CI Pipeline to build releases
 - [x] Linux (x86_64)

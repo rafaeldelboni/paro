@@ -4,6 +4,25 @@
 Tool for managing dotfiles directories; Heavily based on [rcm](http://thoughtbot.github.io/rcm).  
 paro has first class support on macOS and Linux
 
+## Installation
+
+### Manual
+
+For quick installation use:
+
+``` shell
+$ bash < <(curl -s https://raw.githubusercontent.com/rafaeldelboni/paro/main/install.sh)
+```
+
+### Cargo
+
+If you're a **Rust programmer**, paro can be installed with `cargo`.
+```
+git clone https://github.com/rafaeldelboni/paro
+cd paro
+cargo install --path .
+```
+
 ## CLI Usage
 `paro [OPTIONS]`
 
@@ -82,16 +101,6 @@ By default paro defines these settings, that you can override with options above
 - directories: `~/.dotfiles`
 - destination: `~/`
 - hostname: `Unix Hostname (libc::gethostname)`
-
-## Installation
-Currently there is only one way to install paro.
-
-If you're a **Rust programmer**, paro can be installed with `cargo`.
-```
-git clone https://github.com/rafaeldelboni/paro
-cd paro
-cargo install --path .
-```
 
 ## Building
 
