@@ -10,8 +10,8 @@ paro has first class support on macOS and Linux
 
 For quick installation use:
 
-``` shell
-$ bash < <(curl -s https://raw.githubusercontent.com/rafaeldelboni/paro/main/install.sh)
+```bash
+bash < <(curl -s https://raw.githubusercontent.com/rafaeldelboni/paro/main/install.sh)
 ```
 
 ### Cargo
