@@ -66,6 +66,8 @@ esac
 case "$(uname -m)" in
     x86_64*) ARCH=x86_64;;
     aarch64*) ARCH=aarch64;;
+    # else
+    *) ARCH=x86_64;;
 esac
 
 # Build file name and download link
